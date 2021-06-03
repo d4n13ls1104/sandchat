@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+html, body {
+	background-color:#0b0e11;
+	font-family:Roboto, sans-serif;
+	color:#fff;
+	margin:0px;
+}
+
+a {
+	color:#4C21E8;
+	text-decoration:none;
+}
+
+#logo {
+	margin-left:5px;
+	margin-top:9px;
+	max-height:50px;
+	margin-right:10px;
+	margin-bottom:10px;
+}
+
+#form-wrapper {
+	display:flex;
+	flex-direction:column;
+	justify-content:space-between;
+	width:350px;
+	height:380px;
+	position:absolute;
+	top:0;
+	right:0;
+	bottom:0;
+	left:0;
+	margin:auto;
+}
+
+.input {
+	height:14%;
+	background-color:#242c37;
+	border:none;
+	border-radius:5px;
+	box-sizing:border-box;
+	padding:8px;
+	color:#dee3ea;
+	font-family:Roboto, sans-serif;
+	font-size:16px;
+	outline:none;
+	transition:padding 150ms;
+}
+
+.input:hover {
+	padding:13px;
+}
+
+button {
+	height:14%;
+	border:none;
+	border-radius:5px;
+	box-sizing:border-box;
+	background-color:#4C21E8;
+	font-size:18px;
+	color:#fff;
+	font-weight:bold;
+	transition:background-color 200ms;
+	transition: box-sizing 500ms;
+	cursor:pointer;
+	outline:none;
+}
+
+button:hover {
+	background-color:#3D15CB;
+}
+
+#form-wrapper h1 {
+	margin-bottom:0;
+	-webkit-user-select:none;
+	-moz-user-select:none;
+	-ms-user-select:none;
+	user-select:none;
+}
+
+#form-text {
+	text-align:center;
+	color:#b2bdcd;
+}
+
+ .error {
+	 background-color:#FECACA;
+	 color:red;
+	 width:100%;
+	 margin-top:10px;
+	 border-radius:5px;
+	 display:flex;
+	 justify-content:left;
+	 padding-left:20px;
+	 padding-right:20px;
+	 box-sizing:border-box;
+	 align-self:flex-end;
+ }
+
+ .success {
+	 background-color:#A7F3D0;
+	 color:green;
+	 width:100%;
+	 border-radius:5px;
+	 display:flex;
+	 justify-content:left;
+	 padding-left:20px;
+	 padding-right:20px;
+	 box-sizing:border-box;
+	 align-self:flex-end;
+ }
+
+ #error-wrapper {
+	 display:flex;
+	 margin-left:auto;
+	 margin-right:auto;
+	 justify-content:flex-end;
+	 flex-direction:column;
+	 width:350px;
+	 height:170px;
+ }
