@@ -17,23 +17,19 @@ function isPasswordValid(str) {
 }
 
 // Purpose: Check if email is already registered
-function isEmailRegistered(str, callback) {
-    var connection = db.getDBConnection();
+function isEmailRegistered(str, connection, callback) {
     connection.query(`SELECT 1 FROM users WHERE email=${mysql.escape(str)}`, (err, result) => {
         if(err) console.log(err);
         if(result.length > 0) { callback(true); } else { callback(false); }
     });
-    connection.end();
 }
 
 // Purpose: Check if username is already registered
-function isUsernameRegistered(str, callback) {
-    var connection = db.getDBConnection();
+function isUsernameRegistered(str, connection, callback) {
     connection.query(`SELECT 1 FROM users WHERE username=${mysql.escape(str)}`, (err, result) => {
         if(err) console.log(err);
         if(result.length > 0) { callback(true); } else { callback(false); }
     });
-    connection.end();
 }
 
 module.exports = {
