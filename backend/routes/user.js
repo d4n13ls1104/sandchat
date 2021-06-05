@@ -6,6 +6,7 @@ const mysql = require("mysql");
 // SAND MODULES
 const validator = require("../util/sand-validator");
 const db = require("../util/sand-db").pool;
+const jwt = require("../util/sand-jwt");
 
 const router = express.Router();
 
@@ -22,10 +23,47 @@ router.get("/count", (req, res) => {
 	});
 });
 
+// Purpose: Authenticate user (for login)
+
+router.post("/auth", (req, res) => {
+    let errors = [];
+
+    const email = req.body.email;
+    const password = req.body.password;
+
+    if(!req.body.email) errors.push("Email is required");
+    if(!req.body.password) errors.push("Password is required.");
+    if(errors.length > 0) return res.json({ errors: errors});
+
+
+    db.getConnection((err, connection) => {
+        if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
+
+        connection.query(`SELECT id, username, password FROM users WHERE email=${mysql.escape(email)}`, (err, results) => {
+           if(err) return res.json({ errors: ["Something went wrong. Please try again later1."] });
+
+            if(results.length == 0) return res.json({ errors: ["No user with that email."] });
+            
+            bcrypt.compare(password, results[0].password, (err, result) => {
+                if(err) return res.json({ errors: ["Something went wrong. Please try again later.2"] });
+
+                if(result) {
+					console.log(`${results[0].username} has been authenticated.`); res.cookie()
+                    res.cookie("auth", jwt.sign({ alg: "HS256", type: "jwt" }, { sub: results[0].id, username: results[0].username, iat: Math.floor(new Date().getTime() / 1000), exp: Math.floor(new Date().getTime() / 1000) + 86400 }));
+                    return res.json({ ok: true });
+                }
+				return res.json({ errors: ["Invalid credentials."] });
+            });
+        });
+        connection.release();
+    });
+    
+});
+
 
 // Purpose: Register API, registers users.
 router.post("/register", (req, res) => {
-	var errors = []; // Error messages to return in response
+	let errors = []; // Error messages to return in response
 
 	// Form fields
 	const email = req.body.email;
@@ -54,7 +92,7 @@ router.post("/register", (req, res) => {
 			if(result == true) errors.push("That username is taken.");
 		});
 
-		bcrypt.hash(password, 12, (err, hash) => {
+		bcrypt.hash(password, 10, (err, hash) => {
 			if(err) errors.push("Something went wrong. Please try again later.");
 
 			if(errors.length > 0) return res.json({errors: errors});
