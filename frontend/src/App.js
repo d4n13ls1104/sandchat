@@ -3,7 +3,7 @@ import Register from "./components/Register";
 
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
-function App() {
+const App = () => {
   return (
     <Router>
       <Route exact path="/" component={IndexPage}/>
