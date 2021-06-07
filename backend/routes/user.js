@@ -1,113 +1,76 @@
 // NPM MODULES
-const express = require("express");
-const bcrypt = require("bcrypt");
-const mysql = require("mysql");
+import { Router } from "express";
+import { hash } from "bcrypt";
 
 // SAND MODULES
-const validator = require("../util/sand-validator");
-const db = require("../util/sand-db").pool;
-const jwt = require("../util/sand-jwt");
+import * as validator from "../util/sand-validator";
+import { pool } from "../util/sand-db";
+import { createUserAccount, signTokenForUser, verifyTokenForUser } from "../util/sand-user";
 
-const router = express.Router();
+const router = Router();
 
-
-// Purpose: API to return the number of users that are registered.
+// Purpose: API to return the number of users that are registered
 router.get("/count", (req, res) => {
-	db.getConnection((err, connection) => {
-		if(err) return res.json({errors: ["Something went wrong. Please try again later."]});
-		connection.query("SELECT COUNT(id) AS count FROM users", (err, result) => {
-			if(err) return res.json({errors: ["Something went wrong. Please try again later."]});
-			return res.json({ count: result[0].count });
-		});
-		connection.release();
-	});
-});
-
-// Purpose: Authenticate user (for login)
-
-router.post("/auth", (req, res) => {
-    let errors = [];
-
-    const email = req.body.email;
-    const password = req.body.password;
-
-    if(!req.body.email) errors.push("Email is required");
-    if(!req.body.password) errors.push("Password is required.");
-    if(errors.length > 0) return res.json({ errors: errors});
-
-
-    db.getConnection((err, connection) => {
+    pool.getConnection((err, connection) => {
         if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
-
-        connection.query(`SELECT id, username, password FROM users WHERE email=${mysql.escape(email)}`, (err, results) => {
-           if(err) return res.json({ errors: ["Something went wrong. Please try again later1."] });
-
-            if(results.length == 0) return res.json({ errors: ["No user with that email."] });
-            
-            bcrypt.compare(password, results[0].password, (err, result) => {
-                if(err) return res.json({ errors: ["Something went wrong. Please try again later.2"] });
-
-                if(result) {
-					console.log(`${results[0].username} has been authenticated.`); res.cookie()
-                    res.cookie("auth", jwt.sign({ alg: "HS256", type: "jwt" }, { sub: results[0].id, username: results[0].username, iat: Math.floor(new Date().getTime() / 1000), exp: Math.floor(new Date().getTime() / 1000) + 86400 }));
-                    return res.json({ ok: true });
-                }
-				return res.json({ errors: ["Invalid credentials."] });
-            });
+        connection.query("SELECT COUNT(id) AS count FROM users", (err, result) => {
+            if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
+            return res.json({ count: result[0].count });
         });
         connection.release();
     });
-    
 });
 
-
-// Purpose: Register API, registers users.
+// Purpose: Register API, registers users.. why did i even add this comment
 router.post("/register", (req, res) => {
-	let errors = []; // Error messages to return in response
+    let errors = []; // Error messages to return in response
 
-	// Form fields
-	const email = req.body.email;
-	const username = req.body.username;
-	const password = req.body.password;
+    // Form fields
+    const email = req.body.email;
+    const username = req.body.username;
+    const password = req.body.password;
 
-	// Check if fields were actually sent.
-	if(!req.body.email) errors.push("Email is required.");
-	if(!req.body.username) errors.push("Username is required.");
-	if(!req.body.password) errors.push("Password is required.");
-	if(errors.length > 0) return res.json({ errors: errors });
+    // Check if fields were actually sent
+    if(!req.body.email) errors.push("Email is required.");
+    if(!req.body.username) errors.push("Username is required.");
+    if(!req.body.password) errors.push("Password is required.");
+    
+    if(errors.length > 0) return res.json({ errors: errors });
 
-	// Perform validation which does not require db access
-	if(!validator.isEmailValid(email));
-	if(!validator.isUsernameValid(username)) errors.push("Username must contain 3-16 characters and may only include a-z, A-Z, 0-9 or _");
-	if(!validator.isPasswordValid(password)) errors.push("Password must be at least 8 characters in length, contain both a lowercase and uppercase character, a number, and a symbol.");
+    // Perform validation
+    if(!validator.isEmailValid(email)) errors.push("The email you provided is invalid.");
+    if(!validator.isUsernameValid(username)) errors.push("Username must contain 3-16 characters and may only include a-z, A-Z, 0-9, or _.");
+    if(!validator.isPasswordValid(password)) errors.push("Password must be at least 8 characters in length, contain both a lowercase and uppercase character, a number, and a symbol.");
 
-	db.getConnection((err, connection) => {
-		if(err) errors.push("Something went wrong. Please try again later.");
+    pool.getConnection((err, connection) => {
+        if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
+        
+        validator.isEmailRegistered(email, connection, (result) => {
+            if(result) errors.push("That email is already registered.");
+        });
 
-		validator.isEmailRegistered(email, connection,  result => {
-			if(result == true) errors.push("Email is already registered");
-		});
+        validator.isUsernameRegistered(username, connection, (result) => {
+            if(result) errors.push("That username is taken.");
+        });
 
-		validator.isUsernameRegistered(username, connection, result => {
-			if(result == true) errors.push("That username is taken.");
-		});
+        hash(password, 10, (err, hash) => {
+            if(err) errors.push("Something went wrong. Please try again later.");
 
-		bcrypt.hash(password, 10, (err, hash) => {
-			if(err) errors.push("Something went wrong. Please try again later.");
+            if(errors.length > 0) return res.json({ errors: errors });
 
-			if(errors.length > 0) return res.json({errors: errors});
+            const acc = createUserAccount({
+                email: email,
+                username: username,
+                password: hash
+            });
 
-			connection.query(`INSERT INTO users (email, username, password) VALUES (${mysql.escape(email.toLowerCase())}, ${mysql.escape(username)}, ${mysql.escape(hash)})`, err => {
-				if(err) {
-					errors.push("Something went wrong. Please try again later.");
-					return res.json({errors: errors});
-				}
-				console.log(`New member: ${username}`);
-				return res.json({ ok: true });
-			});
-		});
-		connection.release();
-	});
+            if(!acc) errors.push("Something went wrong. Please try again later.");
+            return res.json({ errors: errors });
+        });
+        connection.release();
+    });
 });
 
-module.exports = router;
+// TODO: WRITE AUTH ROUTE
+
+export default Router;
