@@ -1,11 +1,13 @@
 // NPM MODULES
 import { Router } from "express";
-import { hash } from "bcrypt";
+import * as bcrypt from "bcrypt";
 
 // SAND MODULES
 import * as validator from "../util/sand-validator";
 import { pool } from "../util/sand-db";
-import { createUserAccount, signTokenForUser, verifyTokenForUser } from "../util/sand-user";
+import { createUserAccount, _DEFAULT_ACCESS_TOKEN_LIFE } from "../util/sand-user";
+import { extractPayloadFromToken, sign, verify } from "../util/sand-jwt";
+import auth from "../middleware/sand-auth";
 
 const router = Router();
 
@@ -21,9 +23,72 @@ router.get("/count", (req, res) => {
     });
 });
 
+router.get("/payload", auth, (req, res) => {
+    console.log(extractPayloadFromToken(req.cookies.auth));
+    res.json(extractPayloadFromToken(req.cookies.auth));
+});
+
+
+
+router.post("/auth", (req, res) => {
+    if(req.cookies.auth && req.cookies.auth.split(".").length == 3) {
+        const payload = extractPayloadFromToken(req.cookies.auth);
+        
+        pool.getConnection((err, connection) => {
+            connection.query(`SELECT tokenVersion FROM users WHERE id=${escape((""+payload.sub))}`, (err, result) => {
+                if(result.length > 0)
+                    if(verify(req.cookies.auth, result[0].tokenVersion)) return res.json({ errors: ["You are already authenticated!. Please logout first!"] }).end();
+            });
+            connection.release();
+        });
+    }
+    
+    const email = req.body.email.toLowerCase();
+    const password = req.body.password;
+
+    if(!req.body.email) return res.json({ errors: ["Email is required."] });
+    if(!req.body.password) return res.json({ errors: ["Password is required"] });
+
+    try {
+        pool.getConnection((err, connection) => {
+
+            if(err) throw new Error(err.message);
+
+            connection.query(`SELECT id, username, tokenVersion, password FROM users WHERE email='${escape(email)}'`, (err, results) => {
+                if(err) throw new Error(err.message);
+
+                if(results.length == 0) return res.json({ errors: ["No account with that email."] });
+
+                bcrypt.compare(password, results[0].password).then(result => {
+                    if(!result) return res.json({ errors: ["Incorrect credentials."] });
+
+                    const token = sign({
+                        alg: "HS256",
+                        type: "access"
+                    },
+                    {
+                        sub: results[0].id,
+                        username: results[0].username,
+                        version: results[0].tokenVersion,
+                        iat: Math.floor(new Date().getTime() / 1000),
+                        exp: Math.floor(new Date().getTime() / 1000) + _DEFAULT_ACCESS_TOKEN_LIFE
+                    });
+                    
+                    res.cookie("auth", token, { httpOnly: true, maxAge: _DEFAULT_ACCESS_TOKEN_LIFE * 1000 });
+                    res.json({ ok: true });
+                }).catch(err => console.error(err));
+            });
+            connection.release();
+        });
+    } catch(err) {
+        console.error(err);
+    }
+});
+
+
 // Purpose: Register API, registers users.. why did i even add this comment
 router.post("/register", (req, res) => {
-    let errors = []; // Error messages to return in response
+    let errors: string[] = []; // Error messages to return in response
 
     // Form fields
     const email = req.body.email;
@@ -53,7 +118,7 @@ router.post("/register", (req, res) => {
             if(result) errors.push("That username is taken.");
         });
 
-        hash(password, 10, (err, hash) => {
+        bcrypt.hash(password, 10, (err, hash) => {
             if(err) errors.push("Something went wrong. Please try again later.");
 
             if(errors.length > 0) return res.json({ errors: errors });
@@ -64,13 +129,16 @@ router.post("/register", (req, res) => {
                 password: hash
             });
 
-            if(!acc) errors.push("Something went wrong. Please try again later.");
-            return res.json({ errors: errors });
+            if(!acc) {
+                errors.push("Something went wrong. Please try again later.");
+                return res.json({ errors: errors });
+            }
+
+            return res.json({ ok: true });
+            
         });
         connection.release();
     });
 });
 
-// TODO: WRITE AUTH ROUTE
-
-export default Router;
+export default router;
