@@ -1,9 +1,13 @@
 import React from "react";
 
-const Error = (props) => {
+interface Props {
+    message: string
+}
+
+const Error: React.FC<Props> = ({ message }) => {
     return (
         <div className="error">
-            <p>{props.message}</p>
+            <p>{message}</p>
         </div>
     );
 }
