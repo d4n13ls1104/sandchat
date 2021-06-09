@@ -12,11 +12,11 @@ const initialState = {
     password: "",
     success: false,
     errors: []
-}
+};
 
-const Register = () => {
-    const [state, setState] = useState(initialState);
-
+const Register: React.FC = () => {
+    const [state, setState] = useState<typeof initialState>(initialState);
+    
     useEffect(() => {
         window.addEventListener("keydown", handleKeyDown);
 
@@ -25,17 +25,15 @@ const Register = () => {
         }
     });
 
-    const handleKeyDown = (e) => {
-        if(e.keyCode === 13) handleSubmit();
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if(e.key === "Enter") handleSubmit();
     }
 
     const handleSubmit = () => {
-        setState({...state, loading: true});
-        axios.post("/user/register", `email=${state.email}&username=${state.username}&password=${state.password}`)
-        .then(res => {
+        axios.post("/user/register", `email=${state.email}&username=${state.username}&password=${state.password}`).then(res => {
             if(res.data.ok) setState({...state, success: true, errors: []});
             if(res.data.errors) setState({...state, errors: res.data.errors, success: false});
-        });
+        }).catch(err => console.error(err));
     }
 
     return (
