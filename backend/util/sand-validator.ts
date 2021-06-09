@@ -13,7 +13,7 @@ export const isUsernameValid = (username: string): boolean => {
 
 // Purpose: Check if password meets standards
 export const isPasswordValid = (password: string): boolean => {
-    return (/^[a-zA-Z0-9\_]+$/).test(password);
+    return (/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*])[\w!@#$%^&*]{8,}$/).test(password);
 }
 
 // Purpose: Check if email is already registered
