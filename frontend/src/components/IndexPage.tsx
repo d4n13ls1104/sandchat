@@ -1,5 +1,4 @@
 import React from "react";
-// import "../stylesheets/index_styles.css";
 
 const IndexPage: React.FC = () => {
     return (
