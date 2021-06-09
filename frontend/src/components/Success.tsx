@@ -1,9 +1,13 @@
 import React from "react";
 
-const Success = (props) => {
+interface Props {
+    message: string
+}
+
+const Success: React.FC<Props> = ({ message }) => {
     return (
         <div className="success">
-            <p>{props.message}</p>
+            <p>{message}</p>
         </div>
     );
 }
