@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Error from "./Error";
-import Success from "./Success";
 
 import axios from "axios";
 
@@ -27,8 +26,10 @@ const Login: React.FC = () => {
     }
 
     const handleSubmit = () => {
-        axios.post("/user/auth", `email=${state.email}&password=${state.password}`).then(res => {
-            if(res.data.ok) setState({...state, success: true, errors: []});
+        setState(initialState);
+        axios.post("/user/auth", `email=${state.email}&password=${state.password}`, {withCredentials: true}).then(res => {
+            console.log(res.headers["set-cookie"]);
+            if(res.data.ok) window.location.href = "/home";
             if(res.data.errors) setState({...state, success: false, errors: res.data.errors});
         }).catch(err => console.error(err));
     }
@@ -43,7 +44,6 @@ const Login: React.FC = () => {
         </div>
         <div id="alert-wrapper">
              {state.errors.length > 0 ? <Error message={state.errors[0]}/> : null}
-             {state.success ? <Success message="Logged in"/> : null}
         </div>
         </>
     );
