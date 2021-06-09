@@ -1,7 +1,7 @@
 import React from "react";
-import "../stylesheets/index_styles.css";
+// import "../stylesheets/index_styles.css";
 
-const IndexPage = () => {
+const IndexPage: React.FC = () => {
     return (
         <>
         <header>
@@ -16,10 +16,10 @@ const IndexPage = () => {
                 </div>
             <div id="nav-wrapper">
                 <a href="/login" className="button-link">
-                    <div class="button" style={{marginTop:30}}>Login</div>
+                    <div className="button" style={{marginTop:30}}>Login</div>
                 </a>
                 <a href="/register" className="button-link">
-                    <div class="button">Register</div>
+                    <div className="button">Register</div>
                     </a>
                 </div>
             </div>
