@@ -6,6 +6,7 @@ import indexRouter from "./routes/index";
 import userRouter from "./routes/user";
 
 import whitelist from "./middleware/whitelist";
+import auth from "./middleware/sand-auth";
 
 const app = express();
 
@@ -18,6 +19,6 @@ app.use(urlencoded({ extended: true }));
 app.use(_static(join(__dirname, "public")));
 
 app.use("/user", userRouter);
-app.use("/", indexRouter);
+app.use("/", auth, indexRouter);
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
