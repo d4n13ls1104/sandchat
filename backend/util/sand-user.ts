@@ -125,7 +125,7 @@ export const signTokenForUser = (id: number): Promise<string> => {
     });
 }
 
-export const addUserToChannel = (user: number, channel: number): Promise<boolean>  => {
+export const addUserToChannel = (user: number, channel: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
             if(err) {
@@ -134,6 +134,27 @@ export const addUserToChannel = (user: number, channel: number): Promise<boolean
             }
 
             connection.query(`INSERT INTO channel_memberships (user, channel) VALUES ('${escape(user)}', '${escape(channel)}')`, (err) => {
+                if(err) {
+                    console.error(err);
+                    reject("Something went wrong. Please try again later.");
+                }
+
+                resolve(true);
+            });
+            connection.release();
+        });
+    });
+}
+
+export const removeUserFromChannel = (user: number, channel: number): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if(err) {
+                console.error(err);
+                reject("Something went wrong. Please try again later.");
+            }
+
+            connection.query(`DELETE FROM channel_memberships WHERE user='${escape(user)}' AND channel='${escape(channel)}'`, (err) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
