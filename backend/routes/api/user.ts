@@ -11,7 +11,9 @@ import auth from "../../middleware/sand-auth";
 
 const router = Router();
 
-// Purpose: API to return the number of users that are registered
+// -----------------------------------------------------------
+// Purpose: Return number of users registered.
+// -----------------------------------------------------------
 router.get("/count", (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
@@ -23,11 +25,16 @@ router.get("/count", (req, res) => {
     });
 });
 
+// -----------------------------------------------------------
+// Purpose: Return payload from user's auth token.
+// -----------------------------------------------------------
 router.get("/payload", auth, (req, res) => {
     res.json(extractPayloadFromToken(req.cookies.auth));
 });
 
-
+// -----------------------------------------------------------
+// Purpose: Validate users credentials and return auth token.
+// -----------------------------------------------------------
 router.post("/auth", (req, res) => {
     if(req.cookies.auth && req.cookies.auth.split(".").length == 3) {
         const payload = extractPayloadFromToken(req.cookies.auth);
@@ -80,7 +87,9 @@ router.post("/auth", (req, res) => {
 });
 
 
-// Purpose: Register API, registers users.. why did i even add this comment
+// -----------------------------------------------------------
+// Purpose: Registers users.
+// -----------------------------------------------------------
 router.post("/register", (req, res) => {
     let errors: string[] = []; // Error messages to return in response
 
