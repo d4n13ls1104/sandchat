@@ -3,11 +3,11 @@ import { Router } from "express";
 import * as bcrypt from "bcrypt";
 
 // SAND MODULES
-import * as validator from "../util/sand-validator";
-import { pool } from "../util/sand-db";
-import { createUserAccount, _DEFAULT_ACCESS_TOKEN_LIFE } from "../util/sand-user";
-import { extractPayloadFromToken, sign, verify } from "../util/sand-jwt";
-import auth from "../middleware/sand-auth";
+import * as validator from "../../util/sand-validator";
+import { pool } from "../../util/sand-db";
+import { createUserAccount, signTokenForUser, _DEFAULT_ACCESS_TOKEN_LIFE } from "../../util/sand-user";
+import { extractPayloadFromToken, verify } from "../../util/sand-jwt";
+import auth from "../../middleware/sand-auth";
 
 const router = Router();
 
@@ -24,10 +24,8 @@ router.get("/count", (req, res) => {
 });
 
 router.get("/payload", auth, (req, res) => {
-    console.log(extractPayloadFromToken(req.cookies.auth));
     res.json(extractPayloadFromToken(req.cookies.auth));
 });
-
 
 
 router.post("/auth", (req, res) => {
@@ -36,8 +34,12 @@ router.post("/auth", (req, res) => {
         
         pool.getConnection((err, connection) => {
             connection.query(`SELECT tokenVersion FROM users WHERE id=${escape((""+payload.sub))}`, (err, result) => {
+                if(err) {
+                    console.error(err);
+                    return res.json({ errors: ["Something went wrong. Please try again later."] });
+                }
                 if(result.length > 0)
-                    if(verify(req.cookies.auth, result[0].tokenVersion)) return res.json({ errors: ["You are already authenticated!. Please logout first!"] }).end();
+                    if(verify(req.cookies.auth, result[0].tokenVersion)) return res.json({ errors: ["You are already authenticated!. Please logout first!"] });
             });
             connection.release();
         });
@@ -49,40 +51,32 @@ router.post("/auth", (req, res) => {
     if(!req.body.email) return res.json({ errors: ["Email is required."] });
     if(!req.body.password) return res.json({ errors: ["Password is required"] });
 
-    try {
-        pool.getConnection((err, connection) => {
+    pool.getConnection((err, connection) => {
 
+        if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
+
+        connection.query(`SELECT id, username, tokenVersion, password FROM users WHERE email='${escape(email)}'`, (err, results) => {
             if(err) throw new Error(err.message);
 
-            connection.query(`SELECT id, username, tokenVersion, password FROM users WHERE email='${escape(email)}'`, (err, results) => {
-                if(err) throw new Error(err.message);
+            if(results.length == 0) return res.json({ errors: ["No account with that email."] });
 
-                if(results.length == 0) return res.json({ errors: ["No account with that email."] });
+            bcrypt.compare(password, results[0].password).then(result => {
+                if(!result) return res.json({ errors: ["Incorrect credentials."] });
 
-                bcrypt.compare(password, results[0].password).then(result => {
-                    if(!result) return res.json({ errors: ["Incorrect credentials."] });
-
-                    const token = sign({
-                        alg: "HS256",
-                        type: "access"
-                    },
-                    {
-                        sub: results[0].id,
-                        username: results[0].username,
-                        version: results[0].tokenVersion,
-                        iat: Math.floor(new Date().getTime() / 1000),
-                        exp: Math.floor(new Date().getTime() / 1000) + _DEFAULT_ACCESS_TOKEN_LIFE
-                    });
-                    
+                signTokenForUser(results[0].id).then(token => {
                     res.cookie("auth", token, { httpOnly: true, maxAge: _DEFAULT_ACCESS_TOKEN_LIFE * 1000 });
-                    res.json({ ok: true });
-                }).catch(err => console.error(err));
+                    res.json({ ok: true, accessToken: token });
+                }).catch(reason => {
+                    return res.json({ errors: [reason] });
+                });
+                    
+            }).catch(err => {
+                console.error(err);
+                return res.json({ errors: ["Something went wrong. Please try again later."] });
             });
-            connection.release();
         });
-    } catch(err) {
-        console.error(err);
-    }
+        connection.release();
+    });
 });
 
 
@@ -119,22 +113,19 @@ router.post("/register", (req, res) => {
         });
 
         bcrypt.hash(password, 10, (err, hash) => {
-            if(err) errors.push("Something went wrong. Please try again later.");
+            if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
 
             if(errors.length > 0) return res.json({ errors: errors });
 
-            const acc = createUserAccount({
+            createUserAccount({
                 email: email,
                 username: username,
                 password: hash
+            }).then(() => {
+                return res.json({ ok: true });
+            }).catch(reason => {
+                return res.json({ errors: [reason] });
             });
-
-            if(!acc) {
-                errors.push("Something went wrong. Please try again later.");
-                return res.json({ errors: errors });
-            }
-
-            return res.json({ ok: true });
             
         });
         connection.release();
