@@ -141,6 +141,7 @@ export const addUserToChannel = (user: number, channel: number): Promise<boolean
 
                 resolve(true);
             });
+            connection.release();
         });
     });
 }
