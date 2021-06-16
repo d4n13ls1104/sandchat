@@ -15,10 +15,16 @@ export interface Payload {
     exp: number
 };
 
+// -----------------------------------------------------------
+// Purpose: Extract payload from token as JSON
+// -----------------------------------------------------------
 export const extractPayloadFromToken = (token: string): Payload => {
     return JSON.parse(base64.decode(token.split(".")[1])); // ez
 }
 
+// -----------------------------------------------------------
+// Purpose: Sign JWT
+// -----------------------------------------------------------
 export const sign = (header: Header, payload: Payload): string => {
 
     const token = `${base64(JSON.stringify(header))}.${base64(JSON.stringify(payload))}` // Create first and second segments
@@ -27,6 +33,9 @@ export const sign = (header: Header, payload: Payload): string => {
     return `${token}.${signature}`;
 }
 
+// -----------------------------------------------------------
+// Purpose: Verify that JWT is valid.
+// -----------------------------------------------------------
 export const verify = (token: string, tokenVersion: number): boolean => {
     
     const segments = token.split("."); // separate the token segments
