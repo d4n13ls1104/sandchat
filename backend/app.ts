@@ -3,7 +3,7 @@ import { join } from "path";
 import cookieParser from "cookie-parser";
 
 import indexRouter from "./routes/index";
-import userRouter from "./routes/user";
+import apiRouter from "./routes/api";
 
 import whitelist from "./middleware/whitelist";
 import auth from "./middleware/sand-auth";
@@ -18,7 +18,7 @@ app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use(_static(join(__dirname, "public")));
 
-app.use("/user", userRouter);
+app.use("/api", apiRouter);
 app.use("/", auth, indexRouter);
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
