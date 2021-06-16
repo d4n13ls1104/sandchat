@@ -1,168 +1,69 @@
-import { escape } from "mysql";
-import { pool } from "./sand-db";
-import { sign } from "./sand-jwt";
+import { Router } from "express";
+import { pool } from "../../util/sand-db";
+import { extractPayloadFromToken } from "../../util/sand-jwt";
 
-export const _DEFAULT_ACCESS_TOKEN_LIFE = 604800; // Access token life in seconds
+const router = Router();
 
-interface UserAccount {
-    email: string,
-    username: string,
-    password: string
-    tokenVersion?: number
-};
+//---------------------------------------------------------------
+// Purpose: Get messages from channel
+//---------------------------------------------------------------
+router.get("/:id/messages", (req, res) => {
+    
+});
 
-export const createUserAccount = (account: UserAccount): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        pool.getConnection((err, connection) => {
+
+
+//---------------------------------------------------------------
+// Purpose: Send message to channel
+//---------------------------------------------------------------
+
+router.post("/:id/messages", (req, res) => {
+    const content = req.body.content;
+
+    if(typeof content === "object") return res.json({ok: true, errors: ["Bad request."]});
+    if(typeof content === "undefined" || content.trim() == "") return res.json({ok: false, errors: ["Message is empty"]});
+
+    if(content.length > 4000) return res.json({ok: false, errors: ["Character limit exceeded."]});
+
+
+    pool.getConnection((err, connection) => {
+        if(err) {
+            console.error(err);
+            return res.json({ok: false, errors: ["Something went wrong. Please try again later."]});
+        }
+
+        // check if channel exists
+        connection.query(`SELECT 1 FROM channels WHERE id=${escape(req.params.id)}`, (err, result) => {
             if(err) {
-                console.error(err);
-                reject("Something went wrong. Please try again later.");
+                return res.json({ok: false, errors: ["Something went wrong. Please try again later."]});
+            }
+            if(result.length === 0) return res.json({ok: false, errors: ["Channel doesn't exist"]});
+        });
+
+
+        const payload = extractPayloadFromToken(req.cookies.auth);
+
+        // Check if user is a member of channel
+
+        connection.query(`SELECT 1 FROM channel_memberships WHERE user=${escape(payload.sub.toString())} AND channel=${escape(req.params.id)}`, (err, result) => {
+            if(err) return res.json({ok: false, errors: ["Something went wrong. Please try again later."]});
+
+            if(result.length === 0) return res.json({ok: false, errors: ["You are not a member of this channel."]});
+        });
+
+        // Everything is okay, send the message
+
+        connection.query(`INSERT INTO messages (author, channel, content) VALUES (${escape(payload.sub.toString())}, ${escape(req.params.id)}, "${escape(content)}")`, (err) => {
+            if(err) {
+                console.error(err.message);
+                return res.json({ok: false, errors: ["Something went wrong. Please try again later"]});
             }
 
-            connection.query(`INSERT INTO users (email, username, password) VALUES ('${escape(account.email)}', '${escape(account.username)}', '${escape(account.password)}')`, (err) => {
-                if(err) {
-                    console.error(err);
-                    reject("Something went wrong. Please try again later.");
-                }
-                resolve(true);
-            });
+            return res.json({ok: true});
         });
+
+        connection.release();
     });
-}
+});
 
-export const deleteUserAccount = (id: number): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        pool.getConnection((err, connection) => {
-            if(err) {
-                console.error(err);
-                reject("Something went wrong. Please try again later.");
-            }
-
-            connection.query(`DELETE FROM users WHERE id='${escape(id)}'`, (err) => {
-                if(err) {
-                    console.error(err);
-                    reject({
-                        reason: "Something went wrong. Please try again later."
-                    });
-                }
-                resolve(true);
-            });
-            connection.release();
-        });
-    });
-}
-
-export const getUserAccountById = (id: number): Promise<UserAccount> => {
-    return new Promise((resolve, reject) => {
-        pool.getConnection((err, connection) => {
-            if(err) {
-                console.error(err);
-                reject("Something went wrong. Please try again later.");
-            }
-
-            // Select user info by ID
-            connection.query(`SELECT email, username, password, tokenVersion FROM users WHERE id='${escape(id)}'`, (err, result) => {
-                if(err) {
-                    console.error(err);
-                    reject("Something went wrong. Please try again later.");
-                }
-
-                // If user doesn't exist
-                if(result.length === 0) reject("Something went wrong. Please try again later.");
-
-                // If promise hasn't been rejected return user info
-                resolve({
-                    email: result[0].email,
-                    username: result[0].username,
-                    password: result[0].password,
-                    tokenVersion: result[0].tokenVersion
-                });
-            });
-            connection.release();
-        });
-    });
-}
-
-export const revokeTokensForUser = (id: number): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        pool.getConnection((err, connection) => {
-            if(err) {
-                console.error(err);
-                reject("Something went wrong. Please try again later.");
-            }
-
-            connection.query(`UPDATE users SET tokenVersion = tokenVersion + 1 WHERE id='${escape(id)}'`, (err) => {
-                if(err) {
-                    console.error(err);
-                    reject("Something went wrong. Please try again later.");
-                }
-                resolve(true);
-            });
-            connection.release();
-        });
-    });
-}
-
-export const signTokenForUser = (id: number): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        getUserAccountById(id).then(user => {
-            const token = sign({
-                alg: "HS256",
-                type: "access"
-            },
-            {
-                sub: id,
-                username: user.username,
-                version: user.tokenVersion!,
-                iat: Math.floor(new Date().getTime() / 1000),
-                exp: Math.floor(new Date().getTime() / 1000) + _DEFAULT_ACCESS_TOKEN_LIFE
-            });
-
-            resolve(token);
-        }).catch(reason => {
-            reject(reason);
-        });
-    });
-}
-
-export const addUserToChannel = (user: number, channel: number): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        pool.getConnection((err, connection) => {
-            if(err) {
-                console.error(err);
-                reject("Something went wrong. Please try again later.");
-            }
-
-            connection.query(`INSERT INTO channel_memberships (user, channel) VALUES ('${escape(user)}', '${escape(channel)}')`, (err) => {
-                if(err) {
-                    console.error(err);
-                    reject("Something went wrong. Please try again later.");
-                }
-
-                resolve(true);
-            });
-            connection.release();
-        });
-    });
-}
-
-export const removeUserFromChannel = (user: number, channel: number): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        pool.getConnection((err, connection) => {
-            if(err) {
-                console.error(err);
-                reject("Something went wrong. Please try again later.");
-            }
-
-            connection.query(`DELETE FROM channel_memberships WHERE user='${escape(user)}' AND channel='${escape(channel)}'`, (err) => {
-                if(err) {
-                    console.error(err);
-                    reject("Something went wrong. Please try again later.");
-                }
-
-                resolve(true);
-            });
-            connection.release();
-        });
-    });
-}
+export default router; 
