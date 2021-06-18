@@ -5,14 +5,14 @@ import { pool } from "./sand-db";
 // Purpose: Check if email is valid
 // -----------------------------------------------------------
 export const isEmailValid = (email: string): boolean => {
-    return (/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/).test(email.toLowerCase());
+    return (/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/).test(email.toLowerCase());
 }
 
 // -----------------------------------------------------------
 // Purpose: Check if username is valid
 // -----------------------------------------------------------
 export const isUsernameValid = (username: string): boolean => {
-    return (/^[a-zA-Z0-9\_]+$/).test(username);
+    return (/^[a-zA-Z0-9_]+$/).test(username);
 }
 
 // -----------------------------------------------------------
@@ -39,6 +39,8 @@ export const isEmailRegistered = (email: string): Promise<boolean> => {
                 }
 
                 if(result.length > 0) resolve(true);
+
+                resolve(false);
             });
             connection.release();
         });
@@ -62,8 +64,18 @@ export const isUsernameRegistered = (username: string): Promise<boolean> => {
                 }
 
                 if(result.length > 0) resolve(true);
+
+                resolve(false);
             });
             connection.release();
         });
     });
+}
+
+
+// -----------------------------------------------------------
+// Purpose: Make sure param is a string
+// -----------------------------------------------------------
+export const sanitizeParam = (param: any): string => {
+    return typeof param === "object" ? param[0] : param;
 }
