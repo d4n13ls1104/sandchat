@@ -40,7 +40,7 @@ router.post("/auth", (req, res) => {
         const payload = extractPayloadFromToken(req.cookies.auth);
         
         pool.getConnection((err, connection) => {
-            connection.query(`SELECT tokenVersion FROM users WHERE id=${escape((""+payload.sub))}`, (err, result) => {
+            connection.query(`SELECT tokenVersion FROM users WHERE id='${escape(payload.sub.toString())}'}`, (err, result) => {
                 if(err) {
                     console.error(err);
                     return res.json({ errors: ["Something went wrong. Please try again later."] });
@@ -52,11 +52,11 @@ router.post("/auth", (req, res) => {
         });
     }
     
-    const email = req.body.email.toLowerCase();
-    const password = req.body.password;
-
     if(!req.body.email) return res.json({ errors: ["Email is required."] });
     if(!req.body.password) return res.json({ errors: ["Password is required"] });
+
+    const email = validator.sanitizeParam(req.body.email);
+    const password = validator.sanitizeParam(req.body.password);
 
     pool.getConnection((err, connection) => {
 
@@ -94,9 +94,9 @@ router.post("/register", (req, res) => {
     let errors: string[] = []; // Error messages to return in response
 
     // Form fields
-    const email = req.body.email;
-    const username = req.body.username;
-    const password = req.body.password;
+    const email = validator.sanitizeParam(req.body.email);
+    const username = validator.sanitizeParam(req.body.username);
+    const password = validator.sanitizeParam(req.body.password);
 
     // Check if fields were actually sent
     if(!req.body.email) errors.push("Email is required.");
@@ -113,13 +113,13 @@ router.post("/register", (req, res) => {
     pool.getConnection((err, connection) => {
         if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
         
-        validator.isEmailRegistered(email, connection, (result) => {
+        validator.isEmailRegistered(email).then(result => {
             if(result) errors.push("That email is already registered.");
-        });
+        }).catch(reason => errors.push(reason));
 
-        validator.isUsernameRegistered(username, connection, (result) => {
+        validator.isUsernameRegistered(username).then(result => {
             if(result) errors.push("That username is taken.");
-        });
+        }).catch(reason => errors.push(reason));
 
         bcrypt.hash(password, 10, (err, hash) => {
             if(err) return res.json({ errors: ["Something went wrong. Please try again later."] });
