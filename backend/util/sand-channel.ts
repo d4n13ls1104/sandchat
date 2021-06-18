@@ -1,69 +1,122 @@
-import { Router } from "express";
-import { pool } from "../../util/sand-db";
-import { extractPayloadFromToken } from "../../util/sand-jwt";
+import { escape } from "mysql";
+import { pool } from "./sand-db";
 
-const router = Router();
+const _DEFAULT_FETCH_LIMIT = 30;
 
-//---------------------------------------------------------------
-// Purpose: Get messages from channel
-//---------------------------------------------------------------
-router.get("/:id/messages", (req, res) => {
-    
-});
+// -----------------------------------------------------------
+// Purpose: Define message type.
+// -----------------------------------------------------------
+interface Message {
+    author: string,
+    content: string,
+    timestamp: string
+}
 
-
-
-//---------------------------------------------------------------
-// Purpose: Send message to channel
-//---------------------------------------------------------------
-
-router.post("/:id/messages", (req, res) => {
-    const content = req.body.content;
-
-    if(typeof content === "object") return res.json({ok: true, errors: ["Bad request."]});
-    if(typeof content === "undefined" || content.trim() == "") return res.json({ok: false, errors: ["Message is empty"]});
-
-    if(content.length > 4000) return res.json({ok: false, errors: ["Character limit exceeded."]});
-
-
-    pool.getConnection((err, connection) => {
-        if(err) {
-            console.error(err);
-            return res.json({ok: false, errors: ["Something went wrong. Please try again later."]});
-        }
-
-        // check if channel exists
-        connection.query(`SELECT 1 FROM channels WHERE id=${escape(req.params.id)}`, (err, result) => {
+// -----------------------------------------------------------
+// Purpose: Given the channel id, check if channel exists.
+// -----------------------------------------------------------
+export const checkChannelExists = (id: number): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
             if(err) {
-                return res.json({ok: false, errors: ["Something went wrong. Please try again later."]});
-            }
-            if(result.length === 0) return res.json({ok: false, errors: ["Channel doesn't exist"]});
-        });
-
-
-        const payload = extractPayloadFromToken(req.cookies.auth);
-
-        // Check if user is a member of channel
-
-        connection.query(`SELECT 1 FROM channel_memberships WHERE user=${escape(payload.sub.toString())} AND channel=${escape(req.params.id)}`, (err, result) => {
-            if(err) return res.json({ok: false, errors: ["Something went wrong. Please try again later."]});
-
-            if(result.length === 0) return res.json({ok: false, errors: ["You are not a member of this channel."]});
-        });
-
-        // Everything is okay, send the message
-
-        connection.query(`INSERT INTO messages (author, channel, content) VALUES (${escape(payload.sub.toString())}, ${escape(req.params.id)}, "${escape(content)}")`, (err) => {
-            if(err) {
-                console.error(err.message);
-                return res.json({ok: false, errors: ["Something went wrong. Please try again later"]});
+                console.error(err);
+                reject("Something went wrong. Please try again later.");
             }
 
-            return res.json({ok: true});
-        });
+            connection.query(`SELECT 1 FROM channels WHERE id='${escape(id)}'`, (err, result) => {
+                if(err) {
+                    console.error(err);
+                    reject("Something went wrong. Please try again later.");
+                }
+                if(result.length === 0) reject("Channel doesn't exist.");
 
-        connection.release();
+                resolve(true);
+            });
+            connection.release();
+        });
     });
-});
+}
 
-export default router; 
+// -----------------------------------------------------------
+// Purpose: Create new channel, returns new channel's id
+// -----------------------------------------------------------
+export const createChannel = (): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if(err) {
+                console.error(err);
+                reject("Something went wrong. Please try again later.");
+            }
+
+            connection.query(`INSERT INTO channels (id) OUTPUT INSERTED.id VALUES (NULL)`, (err, result) => {
+                if(err) {
+                    console.error(err);
+                    reject("Could not create channel.");
+                }
+
+                resolve(result[0].id);
+            });
+            connection.release();
+        });
+    });
+}
+
+// -----------------------------------------------------------
+// Purpose: Delete channel by its id.
+// -----------------------------------------------------------
+export const deleteChannel = (id: number): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if(err) {
+                console.error(err);
+                reject("Something went wrong. Please try again later.");
+            }
+
+            connection.query(`DELETE FROM channels WHERE id='${escape(id)}'`, (err) => {
+                if(err) {
+                    console.error(err);
+                    reject("Could not delete channel.");
+                }
+
+                resolve(true);
+            });
+            connection.release();
+        });
+    });
+}
+
+// -----------------------------------------------------------
+// Purpose: Fetch messages from channel before given date.
+// -----------------------------------------------------------
+export const fetchMessagesFromChannelBeforeDate = (channel: number, beforeDate: string): Promise<Message[] | {}> => {
+    return new Promise((resolve, reject) => {
+        pool.getConnection((err, connection) => {
+            if(err) {
+                console.error(err);
+                reject("Something went wrong. Please try again later.");
+            }
+
+            connection.query(`SELECT users.username, messages.content, messages.timestamp INNER JOIN ON messages.author=users.id FROM messages WHERE channel='${escape(channel)}' AND beforeDate='${escape(beforeDate)}' AND deleted=0 LIMIT ${_DEFAULT_FETCH_LIMIT}`, (err, result) => {
+                if(err) {
+                    console.error(err);
+                    reject("Something went wrong. Please try again later.");
+                }
+
+                if(result.length === 0) resolve({});
+
+                let response: Message[] = [];
+
+                for(let i = 0; i < result.length; i++) {
+                    response.push({
+                        author: result[i].username,
+                        content: result[i].content,
+                        timestamp: result[i].timestamp
+                    });
+                }
+
+                resolve(response);
+            });
+            connection.release();
+        });
+    });
+}
