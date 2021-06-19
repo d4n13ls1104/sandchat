@@ -96,13 +96,13 @@ export const fetchMessagesFromChannelBeforeDate = (channel: number, beforeDate: 
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`SELECT users.username, messages.content, messages.timestamp INNER JOIN ON messages.author=users.id FROM messages WHERE channel='${escape(channel)}' AND beforeDate='${escape(beforeDate)}' AND deleted=0 LIMIT ${_DEFAULT_FETCH_LIMIT}`, (err, result) => {
+            connection.query(`SELECT users.username, messages.content, messages.timestamp FROM messages INNER JOIN users ON messages.author=users.id WHERE messages.channel=${escape(channel)} AND messages.timestamp < ${escape(beforeDate)} AND messages.deleted=0 LIMIT ${_DEFAULT_FETCH_LIMIT}`, (err, result) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
                 }
 
-                if(result.length === 0) resolve({});
+                if(typeof result === "undefined" || result.length === 0) resolve({});
 
                 let response: Message[] = [];
 
