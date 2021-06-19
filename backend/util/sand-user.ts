@@ -2,14 +2,14 @@ import { escape } from "mysql";
 import { pool } from "./sand-db";
 import { sign } from "./sand-jwt";
 
-export const _DEFAULT_ACCESS_TOKEN_LIFE = 604800; // Access token life in seconds
+export const _DEFAULT_ACCESS_TOKEN_LIFE = 604800; // Access token life in seconds.
 
 interface UserAccount {
     email: string,
     username: string,
     password: string
     tokenVersion?: number
-};
+}
 
 // -----------------------------------------------------------
 // Purpose: Create user account
@@ -199,7 +199,7 @@ export const isUserChannelMember = (user: number, channel: number): Promise<bool
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`SELECT 1 FROM channel_memberships WHERE user='${escape(user)}', channel='${escape(channel)}'`, (err, result) => {
+            connection.query(`SELECT 1 FROM channel_memberships WHERE user='${escape(user)}' AND channel='${escape(channel)}'`, (err, result) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -231,10 +231,10 @@ export const sendMessageForUser = (user: number, channel: number, content: strin
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`INSERT INTO messages (author, channel, content) VALUES ('${escape(user)}', '${escape(channel)}', '${escape(content)}')`, (err) => {
+            connection.query(`INSERT INTO messages (author, channel, content) VALUES (${escape(user)}, ${escape(channel)}, ${escape(content)})`, (err) => {
                 if(err) {
                     console.error(err);
-                    reject(err);
+                    reject("Something went wrong. Please try again later.");
                 }
 
                 resolve(true);
