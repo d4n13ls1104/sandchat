@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import Error from "./Error";
+
+import Error from "components/Common/Error";
+import Link from "components/Common/Link";
+
+import FormWrapper from "components/FormComponents/FormWrapper";
+import FormHeader from "components/FormComponents/FormHeader";
+import FormInput from "components/FormComponents/FormInput";
+import FormButton from "components/FormComponents/FormButton";
+import FormSubText from "components/FormComponents/FormSubText";
+import FormAlertWrapper from "components/FormComponents/FormAlertWrapper";
 
 import axios from "axios";
 
@@ -15,7 +24,7 @@ const Login: React.FC = () => {
 
     useEffect(() => {
         window.addEventListener("keydown", handleKeyDown);
-        
+
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         }
@@ -26,25 +35,28 @@ const Login: React.FC = () => {
     }
 
     const handleSubmit = () => {
-        setState(initialState);
-        axios.post("/user/auth", `email=${state.email}&password=${state.password}`, {withCredentials: true}).then(res => {
-            console.log(res.headers["set-cookie"]);
-            if(res.data.ok) window.location.href = "/home";
-            if(res.data.errors) setState({...state, success: false, errors: res.data.errors});
+        axios.post("/api/user/auth", `email=${state.email}&password=${state.password}`).then(({data}) => {
+            if(data.ok) window.location.href = "/home";
+            if(data.errors) setState({...state, success: false, errors: data.errors});
         }).catch(err => console.error(err));
     }
+
     return (
         <>
-        <div id="form-wrapper">
-            <h1>Welcome back</h1>
-            <input onChange={(e) => setState({...state, email: e.target.value})} value={state.email} type="text" placeholder="Email address" className="input"/>
-            <input onChange={(e) => setState({...state, password: e.target.value})} value={state.password} type="password" placeholder="Password" className="input"/>
-            <button onClick={handleSubmit} type="submit">Login</button>
-            <span id="form-text">Don't have an account? <a href="/register">Register</a>!</span>
-        </div>
-        <div id="alert-wrapper">
-             {state.errors.length > 0 ? <Error message={state.errors[0]}/> : null}
-        </div>
+        <FormAlertWrapper>
+            {state.errors.length > 0 ? <Error message={state.errors[0]}/> : null}
+        </FormAlertWrapper>
+
+        <FormWrapper>
+            <FormHeader>Login</FormHeader>
+            <FormInput onChange={(e) => setState({...state, email: e.target.value})} value={state.email} type="email" placeholder="Email address"/>
+            <FormInput onChange={(e) => setState({...state, password: e.target.value})} value={state.password} type="password" placeholder="Password"/>
+            <FormButton onClick={handleSubmit}>Login</FormButton>
+
+            <FormSubText>
+                Don't have an account? <Link href="/register">Register</Link>!
+            </FormSubText>
+        </FormWrapper>
         </>
     );
 }
