@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "styled-components";
 
 interface Props {
     message: string
@@ -6,10 +7,23 @@ interface Props {
 
 const Success: React.FC<Props> = ({ message }) => {
     return (
-        <div className="success">
+        <SuccessWrapper>
             <p>{message}</p>
-        </div>
+        </SuccessWrapper>
     );
 }
+
+const SuccessWrapper = styled.div`
+    background-color: #A7F3D0;
+    color:#0f0;
+    width: 100%;
+    border-radius: 5px;
+    display: flex;
+    justify-content: left;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+    align-self: flex-end;
+`
 
 export default Success;
