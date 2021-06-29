@@ -40,7 +40,7 @@ const Index: React.FC = () => {
         <Footer>
             <Link linkColor="#b2bdcd" hoverColor="#dee3ea" href="#">Privacy Policy</Link>
             <Link linkColor="#b2bdcd" hoverColor="#dee3ea" href="#">Terms of Service</Link>
-            <Link linkColor="#b2bdcd" hoverColor="#dee3ea" href="https://www.guilded.gg/i/WknKxlBp">Join us on Guilded</Link>
+            <Link linkColor="#b2bdcd" hoverColor="#dee3ea" href="https://www.guilded.gg/i/sandchat">Join us on Guilded</Link>
         </Footer>
         </>
     );
