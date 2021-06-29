@@ -29,7 +29,7 @@ const Register: React.FC = () => {
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         }
-    });
+    }, []);
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if(e.key === "Enter") handleSubmit();

@@ -1,11 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-interface Props {
-    message: string
-}
-
-const Error: React.FC<Props> = ({ message }) => {
+const Error: React.FC<{ message: string }> = ({ message }) => {
     return (
         <ErrorWrapper>
             <p>{message}</p>
