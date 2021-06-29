@@ -41,7 +41,7 @@ const Home: React.FC = () => {
         }).catch(err => console.error(err));
 
         axios.get("/api/channels/1/messages/?beforeDate=3000-05-30", { withCredentials: true }).then(({data}) => {
-            const tempArr: IMessage[] = [];
+            let tempArr: IMessage[] = [];
 
             for(let i = 0; i < data.length; i++) {
                 tempArr.push({
