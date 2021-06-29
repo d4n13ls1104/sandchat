@@ -2,6 +2,10 @@
   "name": "sandchat",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "start": "ts-node-dev app.ts",
+    "build": "tsc"
+  },
   "dependencies": {
     "base64url": "^3.0.1",
     "bcrypt": "^5.0.1",
