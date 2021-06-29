@@ -1,11 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-interface Props {
-    message: string
-}
-
-const Success: React.FC<Props> = ({ message }) => {
+const Success: React.FC<{ message: string }> = ({ message }) => {
     return (
         <SuccessWrapper>
             <p>{message}</p>
