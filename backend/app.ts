@@ -2,11 +2,11 @@ import express, { json, urlencoded, static as _static} from "express";
 import { join } from "path";
 import cookieParser from "cookie-parser";
 
-import indexRouter from "./routes/index";
-import apiRouter from "./routes/api";
+import indexRouter from "./src/routes/index";
+import apiRouter from "./src/routes/api";
 
-import whitelist from "./middleware/whitelist";
-import auth from "./middleware/sand-auth";
+import whitelist from "./src/middleware/whitelist";
+import auth from "./src/middleware/sand-auth";
 
 const app = express();
 
