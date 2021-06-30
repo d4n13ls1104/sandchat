@@ -12,9 +12,11 @@ interface Message {
     timestamp: string
 }
 
-// -----------------------------------------------------------
-// Purpose: Given the channel id, check if channel exists.
-// -----------------------------------------------------------
+/**
+ * Given the channel id, check if channel exists
+ * @param id 
+ * @returns boolean
+ */
 export const checkChannelExists = (id: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -37,9 +39,10 @@ export const checkChannelExists = (id: number): Promise<boolean> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Create new channel, returns new channel's id
-// -----------------------------------------------------------
+/**
+ * Create new channel, returns new channel's id
+ * @returns number
+ */
 export const createChannel = (): Promise<number> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -61,9 +64,11 @@ export const createChannel = (): Promise<number> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Delete channel by its id.
-// -----------------------------------------------------------
+/**
+ * Delete channel by its id
+ * @param id 
+ * @returns boolean
+ */
 export const deleteChannel = (id: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -85,9 +90,12 @@ export const deleteChannel = (id: number): Promise<boolean> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Fetch messages from channel before given date.
-// -----------------------------------------------------------
+/**
+ * Fetch messages from channel before a given date
+ * @param channel 
+ * @param beforeDate 
+ * @returns Message[]
+ */
 export const fetchMessagesFromChannelBeforeDate = (channel: number, beforeDate: string): Promise<Message[] | {}> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {

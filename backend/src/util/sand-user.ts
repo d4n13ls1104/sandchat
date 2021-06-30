@@ -11,9 +11,11 @@ interface UserAccount {
     tokenVersion?: number
 }
 
-// -----------------------------------------------------------
-// Purpose: Create user account
-// -----------------------------------------------------------
+/**
+ * Creates a user account
+ * @param account 
+ * @returns boolean
+ */
 export const createUserAccount = (account: UserAccount): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -22,7 +24,7 @@ export const createUserAccount = (account: UserAccount): Promise<boolean> => {
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`INSERT INTO users (email, username, password) VALUES ('${escape(account.email)}', '${escape(account.username)}', '${escape(account.password)}')`, (err) => {
+            connection.query(`INSERT INTO users (email, username, password) VALUES (${escape(account.email)}, ${escape(account.username)}, ${escape(account.password)})`, (err) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -33,9 +35,11 @@ export const createUserAccount = (account: UserAccount): Promise<boolean> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Delete user account by id
-// -----------------------------------------------------------
+/**
+ * Deletes an account in the database by id
+ * @param id 
+ * @returns boolean
+ */
 export const deleteUserAccount = (id: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -44,7 +48,7 @@ export const deleteUserAccount = (id: number): Promise<boolean> => {
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`DELETE FROM users WHERE id='${escape(id)}'`, (err) => {
+            connection.query(`DELETE FROM users WHERE id=${escape(id)}`, (err) => {
                 if(err) {
                     console.error(err);
                     reject({
@@ -58,9 +62,11 @@ export const deleteUserAccount = (id: number): Promise<boolean> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Get user details from account id
-// -----------------------------------------------------------
+/**
+ * Get the details of an account by ID
+ * @param id 
+ * @returns UserAccount
+ */
 export const getUserAccountById = (id: number): Promise<UserAccount> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -70,7 +76,7 @@ export const getUserAccountById = (id: number): Promise<UserAccount> => {
             }
 
             // Select user info by ID
-            connection.query(`SELECT email, username, password, tokenVersion FROM users WHERE id='${escape(id)}'`, (err, result) => {
+            connection.query(`SELECT email, username, password, tokenVersion FROM users WHERE id=${escape(id)}`, (err, result) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -92,9 +98,11 @@ export const getUserAccountById = (id: number): Promise<UserAccount> => {
     });
 }
 
-// -----------------------------------------------------------------------
-// Purpose: Revoke users access tokens by incrementing their token version
-// -----------------------------------------------------------------------
+/**
+ * Revoke users access tokens by incrementing their token version
+ * @param id 
+ * @returns boolean
+ */
 export const revokeTokensForUser = (id: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -103,7 +111,7 @@ export const revokeTokensForUser = (id: number): Promise<boolean> => {
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`UPDATE users SET tokenVersion = tokenVersion + 1 WHERE id='${escape(id)}'`, (err) => {
+            connection.query(`UPDATE users SET tokenVersion = tokenVersion + 1 WHERE id=${escape(id)}`, (err) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -115,9 +123,11 @@ export const revokeTokensForUser = (id: number): Promise<boolean> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Sign token for user by their id
-// -----------------------------------------------------------
+/**
+ * Sign token for user by their ID
+ * @param id 
+ * @returns string
+ */
 export const signTokenForUser = (id: number): Promise<string> => {
     return new Promise((resolve, reject) => {
         getUserAccountById(id).then(user => {
@@ -140,9 +150,12 @@ export const signTokenForUser = (id: number): Promise<string> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Add user to a channel by id
-// -----------------------------------------------------------
+/**
+ * Add a user to a channel by ID
+ * @param user 
+ * @param channel 
+ * @returns boolean
+ */
 export const addUserToChannel = (user: number, channel: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -151,7 +164,7 @@ export const addUserToChannel = (user: number, channel: number): Promise<boolean
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`INSERT INTO channel_memberships (user, channel) VALUES ('${escape(user)}', '${escape(channel)}')`, (err) => {
+            connection.query(`INSERT INTO channel_memberships (user, channel) VALUES (${escape(user)}, ${escape(channel)})`, (err) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -164,9 +177,12 @@ export const addUserToChannel = (user: number, channel: number): Promise<boolean
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Remove user from channel by id
-// -----------------------------------------------------------
+/**
+ * Remove a user from channel by ID
+ * @param user 
+ * @param channel 
+ * @returns boolean
+ */
 export const removeUserFromChannel = (user: number, channel: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -175,7 +191,7 @@ export const removeUserFromChannel = (user: number, channel: number): Promise<bo
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`DELETE FROM channel_memberships WHERE user='${escape(user)}' AND channel='${escape(channel)}'`, (err) => {
+            connection.query(`DELETE FROM channel_memberships WHERE user=${escape(user)} AND channel=${escape(channel)}`, (err) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -188,9 +204,12 @@ export const removeUserFromChannel = (user: number, channel: number): Promise<bo
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Check if user is a member of channel by id
-// -----------------------------------------------------------
+/**
+ * Check if a user is a member of channel by ID
+ * @param user 
+ * @param channel 
+ * @returns 
+ */
 export const isUserChannelMember = (user: number, channel: number): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -199,7 +218,7 @@ export const isUserChannelMember = (user: number, channel: number): Promise<bool
                 reject("Something went wrong. Please try again later.");
             }
 
-            connection.query(`SELECT 1 FROM channel_memberships WHERE user='${escape(user)}' AND channel='${escape(channel)}'`, (err, result) => {
+            connection.query(`SELECT 1 FROM channel_memberships WHERE user=${escape(user)} AND channel=${escape(channel)}`, (err, result) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -214,9 +233,13 @@ export const isUserChannelMember = (user: number, channel: number): Promise<bool
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Send message to channel for user by id
-// -----------------------------------------------------------
+/**
+ * Send a message to channel for a user by ID
+ * @param user 
+ * @param channel 
+ * @param content 
+ * @returns boolean
+ */
 export const sendMessageForUser = (user: number, channel: number, content: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         isUserChannelMember(user, channel)

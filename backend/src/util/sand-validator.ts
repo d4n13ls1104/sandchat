@@ -1,30 +1,38 @@
 import { escape } from "mysql";
 import { pool } from "util/sand-db";
 
-// -----------------------------------------------------------
-// Purpose: Check if email is valid
-// -----------------------------------------------------------
+/**
+ * Check if an email is valid
+ * @param email 
+ * @returns boolean
+ */
 export const isEmailValid = (email: string): boolean => {
     return (/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/).test(email.toLowerCase());
 }
 
-// -----------------------------------------------------------
-// Purpose: Check if username is valid
-// -----------------------------------------------------------
+/**
+ * Check if a username is valid
+ * @param username 
+ * @returns boolean
+ */
 export const isUsernameValid = (username: string): boolean => {
     return (/^[a-zA-Z0-9_]+$/).test(username);
 }
 
-// -----------------------------------------------------------
-// Purpose: Check if password meets our standards
-// -----------------------------------------------------------
+/**
+ * Checks if a password is valid and meets our standards
+ * @param password 
+ * @returns boolean
+ */
 export const isPasswordValid = (password: string): boolean => {
     return (/^(?=.*[\d])(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*])[\w!@#$%^&*]{8,}$/).test(password);
 }
 
-// -----------------------------------------------------------
-// Purpose: Check if email is already registered
-// -----------------------------------------------------------
+/**
+ * Checks if an email is registered in the database
+ * @param email 
+ * @returns boolean
+ */
 export const isEmailRegistered = (email: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -32,7 +40,7 @@ export const isEmailRegistered = (email: string): Promise<boolean> => {
                 console.error(err);
                 reject("Something went wrong. Please try again later.");
             }
-            connection.query(`SELECT 1 FROM users WHERE email='${escape(email)}'`, (err, result) => {
+            connection.query(`SELECT 1 FROM users WHERE email=${escape(email)}`, (err, result) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -47,9 +55,11 @@ export const isEmailRegistered = (email: string): Promise<boolean> => {
     });
 }
 
-// -----------------------------------------------------------
-// Purpose: Check if username is already registered
-// -----------------------------------------------------------
+/**
+ * Checks if a username is already registered in the database
+ * @param username 
+ * @returns boolean
+ */
 export const isUsernameRegistered = (username: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
@@ -57,7 +67,7 @@ export const isUsernameRegistered = (username: string): Promise<boolean> => {
                 console.error(err);
                 reject("Something went wrong. Please try again later");
             }
-            connection.query(`SELECT 1 FROM users WHERE username='${escape(username)}'`, (err, result) => {
+            connection.query(`SELECT 1 FROM users WHERE username=${escape(username)}`, (err, result) => {
                 if(err) {
                     console.error(err);
                     reject("Something went wrong. Please try again later.");
@@ -73,9 +83,11 @@ export const isUsernameRegistered = (username: string): Promise<boolean> => {
 }
 
 
-// -----------------------------------------------------------
-// Purpose: Make sure param is a string
-// -----------------------------------------------------------
+/**
+ * Makes sure param is a string
+ * @param param 
+ * @returns string
+ */
 export const sanitizeParam = (param: any): string => {
     return typeof param === "object" ? param[0] : param;
 }
