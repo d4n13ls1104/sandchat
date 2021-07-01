@@ -59,10 +59,14 @@ const boostrap = async () => {
 
     apolloServer.applyMiddleware({ app });
     
-    https.createServer({
-        key: fs.readFileSync(__dirname + "\\ssl\\private.key"),
-        cert: fs.readFileSync(__dirname + "\\ssl\\certificate.crt")
-    }, app).listen(port, () => console.log(`Server listening on port ${port}`));
+    if(process.env.ENVIORMENT === "production") {
+        https.createServer({
+            key: fs.readFileSync(__dirname + "/ssl/private.key"),
+            cert: fs.readFileSync(__dirname + "/ssl/certificate.crt")
+        }, app).listen(port, () => console.log(`Server listening in production mode on port ${port}`));
+    } else {
+        app.listen(port, () => console.log(`Server listening in development mode on port ${port}`));
+    }
 }
 
 boostrap();
