@@ -1,16 +1,22 @@
 import "reflect-metadata";
 import { hash } from "bcryptjs";
-import { User } from "src/entity/User";
+import { User } from "../entity/User";
 import {
     Resolver,
     Mutation,
     Arg,
+    Query
 } from "type-graphql";
 
-import { RegisterInput } from "src/modules/user/register/RegisterInput";
+import { RegisterInput } from "../modules/user/register/RegisterInput";
 
 @Resolver()
 export class RegisterResolver {
+    @Query(() => String)
+    async hello() {
+        return "Hello World.";
+    }
+
     @Mutation(() => User)
     async register(
         @Arg("data") { email, username, password }: RegisterInput
