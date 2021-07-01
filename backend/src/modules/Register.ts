@@ -11,8 +11,10 @@ import { RegisterInput } from "src/modules/user/register/RegisterInput";
 
 @Resolver()
 export class RegisterResolver {
-    @Mutation(() => User, { nullable: true })
-    async register(@Arg("data") { email, username, password }: RegisterInput): Promise<User> {
+    @Mutation(() => User)
+    async register(
+        @Arg("data") { email, username, password }: RegisterInput
+        ): Promise<User> {
         const hashedPassword = await hash(password, 12);
 
         const user = await User.create({
