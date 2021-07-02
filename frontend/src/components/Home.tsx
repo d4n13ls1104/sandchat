@@ -12,7 +12,7 @@ import NavWrapper from "components/Home/NavWrapper";
 import SettingsButton from "components/Home/SettingsButton";
 import MessageInput from "components/Home/MessageInput";
 
-type initialStateType = {
+interface initialStateType {
     username: string,
     input: string,
     messages: IMessage[],
