@@ -3,3 +3,6 @@ build
 misc
 
 backend/public
+backend/src/ssl
+backend/ormconfig.json
+backend/.env

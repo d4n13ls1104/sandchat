@@ -1,0 +1,12 @@
+{
+    "name": "default",
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "zSrbP&%*?Hd*X&{t48pPe5E#T4#Vdbxb",
+    "database": "sandchat",
+    "synchronize": true,
+    "logging": true,
+    "entities": ["src/entity/*.*"]
+}
