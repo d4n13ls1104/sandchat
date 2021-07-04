@@ -4,6 +4,7 @@ import { User } from "../entity/User"
 import { Resolver, Mutation, Arg, Ctx } from "type-graphql";
 import { LoginInput } from "./user/login/LoginInput";
 import { SandContext } from "../types/SandContext";
+import { SandSession } from "types/SandSession";
 
 @Resolver()
 export class LoginResolver {
@@ -28,7 +29,7 @@ export class LoginResolver {
             throw Error("Invalid credentials.");
         }
 
-        ctx.req.session.userId = user.id;
+        (ctx.req.session as SandSession).userId = user.id;
 
         return user;
     }
