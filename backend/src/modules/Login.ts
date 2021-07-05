@@ -13,23 +13,18 @@ export class LoginResolver {
         @Arg("data") { email, password }: LoginInput,
         @Ctx() ctx: SandContext
     ): Promise<User> {
-        try {
-            const user = await User.findOne({ where: { email } });
+        const user = await User.findOne({ where: { email } });
 
-            if(!user) throw Error("User does not exist.");
+        if(!user) throw Error("User does not exist.");
 
-            if(!user.confirmedEmail) throw Error("Please confirm your email.");
+        if(!user.confirmedEmail) throw Error("Please confirm your email.");
 
-            const passwordIsValid = await compare(password, user.password);
+        const passwordIsValid = await compare(password, user.password);
 
-            if(!passwordIsValid) throw Error("Invalid credentials.");
+        if(!passwordIsValid) throw Error("Invalid credentials.");
 
-            (ctx.req.session as SandSession).userId = user.id;
+        (ctx.req.session as SandSession).userId = user.id;
 
-            return user;
-        } catch(error) {
-            console.error(error);
-            throw new Error("Something went wrong. Please try again later.");
-        }
+        return user;
     }
 }
