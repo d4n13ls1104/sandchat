@@ -24,8 +24,8 @@ export class User extends BaseEntity {
   avatar: string;
 
   @Column("timestamp with time zone", { default: () => "CURRENT_TIMESTAMP" })
-  date_registered: Date;
+  dateRegistered: Date;
 
   @Column("bool", { default: false })
-  confirmed: boolean;
+  confirmedEmail: boolean;
 }
