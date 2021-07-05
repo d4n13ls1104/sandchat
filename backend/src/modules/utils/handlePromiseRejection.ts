@@ -1,1 +1,0 @@
-export const handlePromiseRejection = (reason: any) => console.error(reason); 

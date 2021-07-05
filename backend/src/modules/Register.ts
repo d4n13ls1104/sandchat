@@ -17,24 +17,29 @@ export class RegisterResolver {
 	async register(
 		@Arg("data") { email, username, password }: RegisterInput
 	): Promise<User> {
-		const hashedPassword = await hash(password, 12);
+		try {
+			const hashedPassword = await hash(password, 12);
 
-		const user = await User.create({
-			email,
-			username,
-			password: hashedPassword
-		}).save();
+			const user = await User.create({
+				email,
+				username,
+				password: hashedPassword
+			}).save();
 
-		const verificationUrl = await createConfirmationUrl(user.id);
+			const verificationUrl = await createConfirmationUrl(user.id);
 
-		await sendEmail({
-			from: '"noreply" <noreply@chat.sandtee.tk>',
-			to: email,
-			subject: "Please confirm your email",
-			text: "Test",
-			html: `<a href="${verificationUrl}">${verificationUrl}</a>`
-		});
+			await sendEmail({
+				from: '"noreply" <noreply@chat.sandtee.tk>',
+				to: email,
+				subject: "Please confirm your email",
+				text: "Test",
+				html: `<a href="${verificationUrl}">${verificationUrl}</a>`
+			});
 
-		return user;
+			return user;
+		} catch(err) {
+			console.error(err);
+			throw new Error("Something went wrong. Please try again later.");
+		}
 	}
 }
