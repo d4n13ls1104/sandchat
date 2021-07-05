@@ -1,36 +1,35 @@
 import "reflect-metadata";
 import { compare } from "bcryptjs";
-import { User } from "../entity/User"
+import { User } from "../entity/User";
 import { Resolver, Mutation, Arg, Ctx } from "type-graphql";
 import { LoginInput } from "./user/login/LoginInput";
 import { SandContext } from "../types/SandContext";
-import { SandSession } from "types/SandSession";
+import { SandSession } from "../types/SandSession";
 
 @Resolver()
 export class LoginResolver {
     @Mutation(() => User, { nullable: true })
     async login(
         @Arg("data") { email, password }: LoginInput,
-        @Ctx() ctx: SandContext 
+        @Ctx() ctx: SandContext
     ): Promise<User> {
-        const user = await User.findOne({ where: { email } });
+        try {
+            const user = await User.findOne({ where: { email } });
 
-        if(!user) {
-           throw Error("User does not exist.");
+            if(!user) throw Error("User does not exist.");
+
+            if(!user.confirmedEmail) throw Error("Please confirm your email.");
+
+            const passwordIsValid = await compare(password, user.password);
+
+            if(!passwordIsValid) throw Error("Invalid credentials.");
+
+            (ctx.req.session as SandSession).userId = user.id;
+
+            return user;
+        } catch(error) {
+            console.error(error);
+            throw new Error("Something went wrong. Please try again later.");
         }
-
-        if(!user.confirmed) {
-            throw Error("Please confirm your email");
-        }
-
-        const valid = await compare(password, user.password);
-
-        if(!valid) {
-            throw Error("Invalid credentials.");
-        }
-
-        (ctx.req.session as SandSession).userId = user.id;
-
-        return user;
     }
 }
