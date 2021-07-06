@@ -26,14 +26,14 @@ export class RegisterResolver {
 				password: hashedPassword
 			}).save();
 
-			const verificationUrl = await createConfirmationUrl(user.id);
+			const confirmationUrl = await createConfirmationUrl(user.id);
 
 			await sendEmail({
-				from: '"noreply" <noreply@chat.sandtee.tk>',
+				from: '<noreply@chat.sandtee.tk>',
 				to: email,
 				subject: "Please confirm your email",
 				text: "Test",
-				html: `<a href="${verificationUrl}">${verificationUrl}</a>`
+				html: `<a href="${confirmationUrl}">${confirmationUrl}</a>`
 			});
 
 			return user;
