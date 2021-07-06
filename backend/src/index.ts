@@ -3,6 +3,7 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
 import { redis } from "./redis";
+import { SandContext } from "./types/SandContext";
 import * as express from "express";
 import * as connectRedis from "connect-redis";
 import * as session from "express-session";
@@ -24,7 +25,10 @@ const boostrap = async () => {
 		resolvers: [__dirname + "/modules/**.ts"]
 	});
 
-	const apolloServer = new ApolloServer({ schema });
+	const apolloServer = new ApolloServer({
+		schema,
+		context: ({ req }: SandContext) => ({ req })
+	});
 
 	const app = express();
 
