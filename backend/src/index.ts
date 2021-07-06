@@ -27,7 +27,7 @@ const boostrap = async () => {
 
 	const apolloServer = new ApolloServer({
 		schema,
-		context: ({ req }: SandContext) => ({ req })
+		context: ({ req, res }: SandContext) => ({ req, res })
 	});
 
 	const app = express();
