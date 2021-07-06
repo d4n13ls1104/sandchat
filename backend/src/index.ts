@@ -22,7 +22,7 @@ const boostrap = async () => {
 	await createConnection();
 	
 	const schema = await buildSchema({
-		resolvers: [__dirname + "/modules/**.ts"]
+		resolvers: [__dirname + "/modules/user/**.ts"]
 	});
 
 	const apolloServer = new ApolloServer({
