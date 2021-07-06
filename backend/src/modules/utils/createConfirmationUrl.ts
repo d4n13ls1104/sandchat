@@ -6,5 +6,5 @@ export const createConfirmationUrl = async (userId: number) => {
     const token = v4();
     await redis.set(confirmUserPrefix + token, userId, "ex", 60 * 60 * 24);
 
-    return `https://chat.sandtee.tk/confirm/${token}`;
+    return `https://chat.sandtee.tk/user/confirm/${token}`;
 }
