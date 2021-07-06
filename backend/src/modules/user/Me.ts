@@ -10,6 +10,6 @@ export class MeResolver {
     async me(@Ctx() ctx: SandContext): Promise<User | undefined> {
         if(!(ctx.req.session as SandSession).userId) return undefined;
 
-        return await User.findOne((ctx.req.session as SandSession).userId);
+        return User.findOne((ctx.req.session as SandSession).userId);
     }
 }

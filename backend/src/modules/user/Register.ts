@@ -1,10 +1,10 @@
 import "reflect-metadata";
 import { hash } from "bcryptjs";
-import { User } from "../entity/User";
+import { User } from "../../entity/User";
 import { Resolver, Mutation, Arg, Query } from "type-graphql";
-import { RegisterInput } from "./user/register/RegisterInput";
-import { sendEmail } from "./utils/sendEmail";
-import { createConfirmationUrl } from "./utils/createConfirmationUrl";
+import { RegisterInput } from "../user/register/RegisterInput";
+import { sendEmail } from "../utils/sendEmail";
+import { createConfirmationUrl } from "../utils/createConfirmationUrl";
 
 @Resolver()
 export class RegisterResolver {
