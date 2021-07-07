@@ -11,7 +11,7 @@ const Success: React.FC<{ message: string }> = ({ message }) => {
 
 const SuccessWrapper = styled.div`
     background-color: #A7F3D0;
-    color:#0f0;
+    color:#059669;
     width: 100%;
     border-radius: 5px;
     display: flex;
