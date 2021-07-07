@@ -39,6 +39,7 @@ const Register: React.FC = () => {
     const [error, setError] = useState<string | undefined>();
 
     const [registerUser, { data, loading }] = useMutation(REGISTER_MUTATION, {
+        // jesus christ marry mother of satan's left nipple what in the fricking fuck am i looking at
         onError: ({ graphQLErrors }) => {
             setState({...state, success: false});
             if(graphQLErrors) {
@@ -51,6 +52,7 @@ const Register: React.FC = () => {
         }
     });
 
+    // extremely hacky fix.. im sure there's a better way of doing this but for now idc!
     const stateRef = useRef() as React.MutableRefObject<initialStateInterface>;
     stateRef.current = state; 
  
