@@ -11,7 +11,7 @@ export class RegisterInput {
   email: string;
 
   @Field()
-  @Length(1, 16)
+  @Length(1, 16, { message: "Username must be 1-16 characters." })
   @Matches("^[a-zA-Z0-9_.-]*$", undefined, { message: "Username may only contain letters, numbers or: '_', '.', and '-'." })
   @IsUsernameAlreadyRegistered({ message: "Username is already registered." })
   username: string;
