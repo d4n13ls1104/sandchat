@@ -14,7 +14,7 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const port = process.env.ENVIORMENT === "production" ? 443 : 3000;
+const port = process.env.ENVIORMENT === "production" ? 443 : 4000;
 
 const SESSION_SECRET = process.env.SESSION_SECRET || "dev_session_secret";
 
