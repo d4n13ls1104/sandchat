@@ -5,8 +5,9 @@
     "port": 5432,
     "username": "postgres",
     "password": "YOUR_PASSWORD_HERE",
-    "database": "sandchat", // if your database name is different update it here
+    "database": "sandchat",
     "synchronize": true,
-    "logging": false, // set to true if you want to see all sql queries ran
+    // set to true if you want to log all sql queries ran
+    "logging": false,
     "entities": ["src/entity/*.*"]
 }
