@@ -1,5 +1,7 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, JoinTable, OneToMany } from "typeorm";
+import { Channel } from "./Channel";
+import { Message } from "./Message";
 
 @ObjectType()
 @Entity()
@@ -29,4 +31,12 @@ export class User extends BaseEntity {
 
   @Column("bool", { default: false })
   confirmedEmail: boolean;
+
+  @OneToMany(() => Channel, channel => channel.members)
+  @JoinTable()
+  channels: Channel[];
+
+  @OneToMany(() => Message, message => message.author)
+  @JoinTable()
+  messages: Message[];
 }
