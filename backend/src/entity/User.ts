@@ -20,9 +20,10 @@ export class User extends BaseEntity {
   password: string;
 
   @Field()
-  @Column("text", { default: "none" })
+  @Column("text", { nullable: true })
   avatar: string;
 
+  @Field()
   @Column("timestamp with time zone", { default: () => "CURRENT_TIMESTAMP" })
   dateRegistered: Date;
 
