@@ -5,6 +5,7 @@ import { Resolver, Mutation, Arg } from "type-graphql";
 import { RegisterInput } from "../user/register/RegisterInput";
 import { sendEmail } from "../utils/sendEmail";
 import { createConfirmationUrl } from "../utils/createConfirmationUrl";
+import { Channel } from "entity/Channel";
 
 @Resolver()
 export class RegisterResolver {
@@ -15,10 +16,13 @@ export class RegisterResolver {
 		try {
 			const hashedPassword = await hash(password, 12);
 
+			const channel = await Channel.findOne(1); // default channel during development
+
 			const user = await User.create({
 				email,
 				username,
-				password: hashedPassword
+				password: hashedPassword,
+				channels: [channel!]
 			}).save();
 
 			const confirmationUrl = await createConfirmationUrl(user.id);
