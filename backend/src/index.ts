@@ -23,11 +23,6 @@ const boostrap = async () => {
 	
 	const schema = await buildSchema({
 		resolvers: [__dirname + "/modules/user/**.ts"],
-		authChecker: ({ context: { req } }) => {
-			if(req.session.userId) return true;
-
-			return false;
-		}
 	});
 
 	const apolloServer = new ApolloServer({
