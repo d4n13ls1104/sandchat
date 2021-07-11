@@ -1,10 +1,10 @@
 import "reflect-metadata";
 import { compare } from "bcryptjs";
-import { User } from "../../entity/User";
+import { User } from "../../../entity/User";
 import { Resolver, Mutation, Arg, Ctx } from "type-graphql";
-import { LoginInput } from "../user/login/LoginInput";
-import { SandContext } from "../../types/SandContext";
-import { SandSession } from "../../types/SandSession";
+import { LoginInput } from "./login/LoginInput";
+import { SandContext } from "../../../type/SandContext";
+import { SandSession } from "../../../type/SandSession";
 
 @Resolver()
 export class LoginResolver {

@@ -1,9 +1,11 @@
 import "reflect-metadata";
-import { Resolver, Mutation, Ctx } from "type-graphql";
-import { SandContext } from "../../types/SandContext";
+import { Resolver, Mutation, Ctx, UseMiddleware } from "type-graphql";
+import { SandContext } from "../../../type/SandContext";
+import { isAuth } from "../../middlewares/isAuth";
 
 @Resolver()
 export class LogoutResolver {
+    @UseMiddleware(isAuth)
     @Mutation(() => Boolean)
     async logout(@Ctx() ctx: SandContext): Promise<boolean> {
         return new Promise((resolve, reject) => {

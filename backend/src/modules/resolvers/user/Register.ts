@@ -1,11 +1,12 @@
 import "reflect-metadata";
 import { hash } from "bcryptjs";
-import { User } from "../../entity/User";
+import { User } from "../../../entity/User";
 import { Resolver, Mutation, Arg } from "type-graphql";
-import { RegisterInput } from "../user/register/RegisterInput";
-import { sendEmail } from "../utils/sendEmail";
-import { createConfirmationUrl } from "../utils/createConfirmationUrl";
-import { Channel } from "entity/Channel";
+import { RegisterInput } from "./register/RegisterInput";
+import { sendEmail } from "../../utils/sendEmail";
+import { createConfirmationUrl } from "../../utils/createConfirmationUrl";
+import { Channel } from "../../../entity/Channel";
+import { getRepository } from "typeorm";
 
 @Resolver()
 export class RegisterResolver {
@@ -15,15 +16,18 @@ export class RegisterResolver {
 	): Promise<User> {
 		try {
 			const hashedPassword = await hash(password, 12);
+			
+			const devChannel = await Channel.findOne(1, { relations: ["members"] });
 
-			const channel = await Channel.findOne(1); // default channel during development
-
-			const user = await User.create({
+			const user = User.create({
 				email,
 				username,
-				password: hashedPassword,
-				channels: [channel!]
-			}).save();
+				password: hashedPassword
+			});
+
+			devChannel!.members.push(user);
+
+			await getRepository(Channel).save(devChannel!);
 
 			const confirmationUrl = await createConfirmationUrl(user.id);
 

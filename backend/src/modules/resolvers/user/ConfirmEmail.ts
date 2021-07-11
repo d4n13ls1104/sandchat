@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import { User } from "../../entity/User";
+import { User } from "../../../entity/User";
 import { Resolver, Mutation, Arg } from "type-graphql";
-import { redis } from "../../redis";
-import { confirmUserPrefix } from "../constants/redisPrefixes";
+import { redis } from "../../../redis";
+import { confirmUserPrefix } from "../../constants/redisPrefixes";
 
 @Resolver()
 export class ConfirmEmailResolver {

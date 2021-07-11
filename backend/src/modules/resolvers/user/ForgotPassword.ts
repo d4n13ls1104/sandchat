@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import { User } from "../../entity/User";
+import { User } from "../../../entity/User";
 import { Resolver, Mutation, Arg } from "type-graphql";
-import { createForgotPasswordUrl } from "../utils/createForgotPasswordUrl";
-import { sendEmail } from "../utils/sendEmail";
+import { createForgotPasswordUrl } from "../../utils/createForgotPasswordUrl";
+import { sendEmail } from "../../utils/sendEmail";
 
 @Resolver()
 export class ForgotPasswordResolver {
