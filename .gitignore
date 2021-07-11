@@ -4,5 +4,7 @@ misc
 
 backend/public
 backend/src/ssl
-backend/ormconfig.json
 backend/.env
+backend/ormconfig.json
+frontend/yarn.error
+backend/yarn.error
