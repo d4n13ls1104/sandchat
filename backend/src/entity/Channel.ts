@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { Entity, PrimaryGeneratedColumn, BaseEntity, ManyToMany, OneToMany, JoinColumn } from "typeorm";
-import { Message } from "./Message";
-import { User } from "./User";
+import { BaseEntity, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Message } from "../entity/Message";
+import { User } from "../entity/User";
 
 @ObjectType()
 @Entity()
@@ -10,10 +10,11 @@ export class Channel extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToMany(() => User, user => user.channels)
-    members: User[];
+    @ManyToMany(() => User, user => user.channels, { cascade: true })
+    @JoinTable()
+    members: User[]; 
 
     @OneToMany(() => Message, message => message.channel)
     @JoinColumn()
-    messages: Message[];
+    messages: Message[]; 
 }
