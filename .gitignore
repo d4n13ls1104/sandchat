@@ -3,3 +3,8 @@ build
 misc
 
 backend/public
+backend/src/ssl
+backend/.env
+backend/ormconfig.json
+frontend/yarn.error
+backend/yarn.error
