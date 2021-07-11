@@ -1,7 +1,7 @@
-import { Field, ID, ObjectType } from "type-graphql"
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne } from "typeorm";
-import { Channel } from "./Channel";
-import { User } from "./User";
+import { Field, ID, ObjectType } from "type-graphql";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Channel } from "../entity/Channel";
+import { User } from "../entity/User";
 
 @ObjectType()
 @Entity()
@@ -10,12 +10,20 @@ export class Message extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Channel, channel => channel.messages)
+    @ManyToOne(() => Channel)
     channel: Channel;
 
-    @ManyToOne(() => User, user => user.messages)
+    @ManyToOne(() => User)
     author: User;
 
+    @Field()
+    @PrimaryColumn()
+    authorId: number;
+
+    @Field()
+    @PrimaryColumn()
+    channelId: number;
+    
     @Field()
     @Column()
     content: string;
@@ -23,7 +31,7 @@ export class Message extends BaseEntity {
     @Field()
     @Column("timestamp with time zone", { default: () => "CURRENT_TIMESTAMP" })
     timestamp: Date;
-    
+
     @Column("boolean", { default: false })
-    deleted: boolean;
+    isDeleted: boolean;
 }
