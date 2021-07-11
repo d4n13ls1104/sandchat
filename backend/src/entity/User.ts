@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, JoinTable, OneToMany } from "typeorm";
-import { Channel } from "./Channel";
-import { Message } from "./Message";
+import { BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Channel } from "../entity/Channel";
+import { Message } from "../entity/Message";
 
 @ObjectType()
 @Entity()
@@ -26,17 +26,15 @@ export class User extends BaseEntity {
   avatar: string;
 
   @Field()
-  @Column("timestamp with time zone", { default: () => "CURRENT_TIMESTAMP" })
+  @Column("timestamp with time zone", { default: () => "CURRENT_TIMESTAMP"})
   dateRegistered: Date;
 
-  @Column("bool", { default: false })
+  @Column("boolean", { default: false })
   confirmedEmail: boolean;
 
-  @OneToMany(() => Channel, channel => channel.members)
-  @JoinTable()
-  channels: Channel[];
+  @ManyToMany(() => Channel, channel => channel.members)
+  channels: Channel[]; 
 
   @OneToMany(() => Message, message => message.author)
-  @JoinTable()
   messages: Message[];
 }
