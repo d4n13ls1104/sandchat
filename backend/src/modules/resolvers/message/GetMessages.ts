@@ -26,13 +26,17 @@ export class GetMessagesResolver {
             .leftJoinAndSelect("user.channels", "userChannels")
             .where("user.id = :userId", { userId: user!.id })
             .andWhere("userChannels.id = :channelId", { channelId })
-            .getOne();
+            .getOne() !== undefined;
+
         if(!userIsChannelMember) throw Error("You are not a member of this channel.");
 
         const channelMessages = await Channel.createQueryBuilder("channel")
             .leftJoinAndSelect("channel.messages", "messages")
+            .leftJoinAndSelect("messages.author", "author")
             .where("messages.timestamp < :beforeDate", { beforeDate })
             .andWhere("messages.isDeleted = false")
+            .orderBy("messages.id", "DESC")
+            .limit(30)
             .getOne();
 
         return channelMessages?.messages;
