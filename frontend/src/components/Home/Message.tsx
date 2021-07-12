@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export type IMessage = {
     author: string,
-    avatar: string,
+    avatar?: string,
     timestamp: string,
     content: string
 }
