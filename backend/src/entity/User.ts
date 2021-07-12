@@ -10,7 +10,6 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field()
   @Column("text", { unique: true })
   email: string;
 

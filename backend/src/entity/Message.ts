@@ -13,6 +13,7 @@ export class Message extends BaseEntity {
     @ManyToOne(() => Channel)
     channel: Channel;
 
+    @Field()
     @ManyToOne(() => User)
     author: User;
 
