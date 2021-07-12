@@ -3,7 +3,6 @@ import { gql, useMutation } from "@apollo/client";
 
 import Error from "components/Common/Error";
 import Link from "components/Common/Link";
-import Success from "components/Common/Success";
 
 import FormWrapper from "components/FormComponents/FormWrapper";
 import FormHeader from "components/FormComponents/FormHeader";
@@ -36,7 +35,7 @@ const Login: React.FC = () => {
     const [state, setState] = useState<initialStateInterface>(initialState);
     const [error, setError] = useState<string | undefined>();
 
-    const [loginUser, { data, loading }] = useMutation(LOGIN_MUTATION, {
+    const [loginUser, { loading }] = useMutation(LOGIN_MUTATION, {
         onError: ({ graphQLErrors }) => {
             setState({...state, success: false});
             setError(graphQLErrors[0].message);
@@ -54,6 +53,10 @@ const Login: React.FC = () => {
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if(state.success) window.location.href = "/home";
+    }, [state.success]);
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if(e.key === "Enter") handleSubmit();
@@ -74,7 +77,6 @@ const Login: React.FC = () => {
         <>
         <FormAlertWrapper>
             {error !== undefined && !state.success ? <Error message={error}/> : null}
-            {data && data.login ? <Success message="Logged in!"/> : null}
         </FormAlertWrapper>
 
         <FormWrapper>
