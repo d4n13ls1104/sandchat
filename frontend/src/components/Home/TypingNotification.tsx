@@ -13,7 +13,7 @@ const TypingNotification: React.FC<{ users: string[] }> = ({users}) => {
                     <div className="dot three"></div>
                 </div> : null
             }
-            <span>
+            <p>
                 {
                     users.length < 3 && users.length > 1 ?
                         users.map((v, i) => {
@@ -22,14 +22,14 @@ const TypingNotification: React.FC<{ users: string[] }> = ({users}) => {
                             
                             return `${v}, `;
                         })
-                    : null
+                    : null 
                 }
                 {
                     users.length === 1 ?
                         `${users[0]} is typing...`
-                    : null
+                    : null 
                 }
-            </span>
+            </p>
         </div>
     );
 }
