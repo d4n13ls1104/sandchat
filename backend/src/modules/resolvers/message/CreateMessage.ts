@@ -26,7 +26,7 @@ export class CreateMessageResolver {
             .leftJoinAndSelect("user.channels", "userChannels")
             .where("user.id = :userId", { userId: user!.id })
             .andWhere("userChannels.id = :channelId", { channelId })
-            .getOne();
+            .getOne() !== undefined;
 
         if(!userIsChannelMember) throw Error("You are not a member of this channel.");
         
