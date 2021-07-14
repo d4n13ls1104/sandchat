@@ -12,7 +12,7 @@ export class ConfirmEmailResolver {
 
         if(!userId) return false; 
 
-        await User.update({ id: parseInt(userId, 10) }, { confirmedEmail: true });
+        await User.update({ id: userId }, { confirmedEmail: true });
         await redis.del(confirmUserPrefix + token);
 
         return true;
