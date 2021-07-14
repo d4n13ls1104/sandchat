@@ -7,8 +7,8 @@ import { User } from "../entity/User";
 @Entity()
 export class Channel extends BaseEntity {
     @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
     @ManyToMany(() => User, user => user.channels, { cascade: true })
     @JoinTable()
