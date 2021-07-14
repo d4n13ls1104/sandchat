@@ -5,7 +5,7 @@ import { IsNotBlank } from "./isNotBlank";
 @InputType()
 export class CreateMessageInput {
     @Field()
-    channelId: number;
+    channelId: string;
 
     @Field()
     @IsNotBlank({ message: "Message cannot be empty." })
