@@ -10,7 +10,7 @@ export const ME_QUERY = gql`
 `
 
 export const GET_MESSAGES_QUERY = gql`
-    query GetMessages($channelId: Float!, $beforeDate: String!) {
+    query GetMessages($channelId: String!, $beforeDate: String!) {
         getMessages(data: {channelId: $channelId, beforeDate: $beforeDate}) {
             id,
             content,
