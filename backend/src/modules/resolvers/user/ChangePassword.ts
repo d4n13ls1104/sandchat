@@ -16,7 +16,7 @@ export class ChangePasswordResolver {
 
         const hashedPassword = await hash(password, 12);
         
-        await User.update({ id: parseInt(userId, 10) }, { password: hashedPassword });
+        await User.update({ id: userId }, { password: hashedPassword });
         await redis.del(forgotPasswordPrefix + token);
 
         return true;
