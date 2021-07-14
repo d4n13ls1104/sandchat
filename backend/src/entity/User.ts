@@ -7,8 +7,8 @@ import { Message } from "../entity/Message";
 @Entity()
 export class User extends BaseEntity {
   @Field(() => ID)
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column("text", { unique: true })
   email: string;
