@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { animateScroll } from "react-scroll";
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+
+import { CREATE_MESSAGE_MUTATION } from "gql/Mutations";
+import { GET_MESSAGES_QUERY, ME_QUERY } from "gql/Queries";
+
+import { UserData } from "types/UserData";
 
 import  { PersonalNav, PersonalNavAvatar, PersonalNavUsername } from "components/Home/PersonalNav";
 import Message, { IMessage } from "components/Home/Message";
@@ -12,44 +17,6 @@ import NavWrapper from "components/Home/NavWrapper";
 import SettingsButton from "components/Home/SettingsButton";
 import MessageInput from "components/Home/MessageInput";
 
-interface UserData {
-    username: string,
-    avatar: string
-}
-
-const CREATE_MESSAGE_MUTATION = gql`
-    mutation CreateMessage($channelId: Float!, $content: String!) {
-        createMessage(data: {channelId: $channelId, content: $content}) {
-            id
-        }
-    } 
-`
-
-const ME_QUERY = gql`
-    query MeQuery {
-        me {
-            username,
-            avatar
-        }
-    }
-`
-
-const GET_MESSAGES_QUERY = gql`
-    query GetMessages($channelId: Float!, $beforeDate: String!) {
-        getMessages(data: {channelId: $channelId, beforeDate: $beforeDate}) {
-            id,
-            content,
-            timestamp,
-
-            author {
-                id,
-                username,
-                avatar
-            }
-        }
-    }
-`
-
 const Home: React.FC = () => {
     const [messageBuffer, setMessageBuffer] = useState<IMessage[]>([]);
     const [usersTyping] = useState<string[]>([]);
@@ -60,6 +27,7 @@ const Home: React.FC = () => {
     const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
     const inputStateRef = useRef() as React.MutableRefObject<string>;
     const userRef = useRef() as React.MutableRefObject<UserData>;
+    const messageWrapperRef = useRef() as React.MutableRefObject<HTMLDivElement>;
     
     inputStateRef.current = input;
     userRef.current = user!;
@@ -74,44 +42,11 @@ const Home: React.FC = () => {
         }
     });
 
-    const { data } = useQuery(ME_QUERY);
+    const { data: meData } = useQuery(ME_QUERY);
 
-    const { data: messageData } = useQuery(GET_MESSAGES_QUERY, {
-        variables: {
-            channelId: 1,
-            beforeDate: "3000-05-30"
-        }
-    });
+    const [fetchMessages, { data: messageData }] = useLazyQuery(GET_MESSAGES_QUERY);
 
-    useEffect(() => {
-        window.addEventListener("keydown", handleKeyDown);
-
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        animateScroll.scrollToBottom({
-            duration:0,
-            delay: 0,
-            containerId: "message_wrapper"
-        });
-    }, [messageBuffer]);
-
-    useEffect(() => (error !== undefined ? console.error(error) : undefined), [error])
-
-    useEffect(() => {
-        if(!data || !data.me) return;
-
-        setUser({
-            username: data.me.username,
-            avatar: data.me.avatar
-        });
-    }, [data])
-
-    useEffect(() => {
-        if(!messageData || !messageData.getMessages) return;
-
+    const formatMessageQueryResponse = (): IMessage[] => {
         let fetchedMessages: IMessage[] = [];
 
         for(let i = messageData.getMessages.length - 1; i >= 0; i--) {
@@ -123,11 +58,69 @@ const Home: React.FC = () => {
             });
         }
 
-        setMessageBuffer(fetchedMessages);
+        return fetchedMessages;
+    }
+
+    useEffect(() => {
+        window.addEventListener("keydown", handleKeyDown);
+
+        fetchMessages({
+            variables: {
+                channelId: 1,
+                beforeDate: "3000-05-30"
+            }
+        });
+
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if(messageWrapperRef.current.scrollTop !== 0 || messageBuffer.length <= 30) {
+            animateScroll.scrollToBottom({
+                duration: 0,
+                delay: 0,
+                containerId: "message_wrapper"
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [messageBuffer]);
+
+    useEffect(() => (error !== undefined ? console.error(error) : undefined), [error])
+
+    useEffect(() => {
+        if(!meData || !meData.me) return;
+
+        setUser({
+            username: meData.me.username,
+            avatar: meData.me.avatar
+        });
+    }, [meData])
+
+    useEffect(() => {
+        if(!messageData || !messageData.getMessages) return;
+
+        if(messageBuffer.length > 0) {
+            return setMessageBuffer(s => formatMessageQueryResponse().concat(s));
+        }
+
+        setMessageBuffer(formatMessageQueryResponse());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [messageData]);
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if(e.key === "Enter" && inputStateRef.current.trim().length !== 0) handleSendMessage();
+    }
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        if(e.currentTarget.scrollTop === 0) {
+            fetchMessages({
+                variables: {
+                    channelId: 1,
+                    beforeDate: messageBuffer[0].timestamp
+                }
+            });
+        }
     }
 
     const handleSendMessage = () => {
@@ -166,7 +159,7 @@ const Home: React.FC = () => {
             </NavWrapper>
 
             <MainContentWrapper>
-                <MessageWrapper id="message_wrapper">
+                <MessageWrapper ref={messageWrapperRef} id="message_wrapper" onScroll={handleScroll}>
                     {
                         messageBuffer.length > 0 ? 
                             messageBuffer.map((v, i) => (<Message key={i} message={v}/>)) 
