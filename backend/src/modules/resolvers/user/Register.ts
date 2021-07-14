@@ -16,8 +16,8 @@ export class RegisterResolver {
 	): Promise<User> {
 		try {
 			const hashedPassword = await hash(password, 12);
-			
-			const devChannel = await Channel.findOne(1, { relations: ["members"] });
+
+			const devChannel = await Channel.findOne("32d86642-37f2-4833-b4d3-382caac01a12", { relations: ["members"] });
 
 			const user = User.create({
 				email,
