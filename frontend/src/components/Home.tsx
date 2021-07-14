@@ -46,6 +46,7 @@ const Home: React.FC = () => {
 
     const [fetchMessages, { data: messageData }] = useLazyQuery(GET_MESSAGES_QUERY);
 
+    // converts graphql response to IMessage array
     const formatMessageQueryResponse = (): IMessage[] => {
         let fetchedMessages: IMessage[] = [];
 
@@ -64,10 +65,11 @@ const Home: React.FC = () => {
     useEffect(() => {
         window.addEventListener("keydown", handleKeyDown);
 
+        // Fetch messages on page load
         fetchMessages({
             variables: {
-                channelId: 1,
-                beforeDate: "3000-05-30"
+                channelId: "32d86642-37f2-4833-b4d3-382caac01a12",
+                beforeDate: "3000-05-30" // infinitely far in the future
             }
         });
 
@@ -116,7 +118,7 @@ const Home: React.FC = () => {
         if(e.currentTarget.scrollTop === 0) {
             fetchMessages({
                 variables: {
-                    channelId: 1,
+                    channelId: "32d86642-37f2-4833-b4d3-382caac01a12",
                     beforeDate: messageBuffer[0].timestamp
                 }
             });
@@ -129,7 +131,7 @@ const Home: React.FC = () => {
             {
                 author: userRef.current.username,
                 avatar: userRef.current.avatar,
-                timestamp: "4:20pm",
+                timestamp: "4:20pm", // will change this static timestamp before release
                 content: inputStateRef.current
             }
         ]);
@@ -138,7 +140,7 @@ const Home: React.FC = () => {
 
         createMessage({
             variables: {
-                channelId: 1,
+                channelId: "32d86642-37f2-4833-b4d3-382caac01a12",
                 content: inputStateRef.current
             }
         });
