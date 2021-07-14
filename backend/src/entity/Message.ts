@@ -7,8 +7,8 @@ import { User } from "../entity/User";
 @Entity()
 export class Message extends BaseEntity {
     @Field(() => ID)
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
     @ManyToOne(() => Channel)
     channel: Channel;
@@ -19,11 +19,11 @@ export class Message extends BaseEntity {
 
     @Field()
     @PrimaryColumn()
-    authorId: number;
+    authorId: string;
 
     @Field()
     @PrimaryColumn()
-    channelId: number;
+    channelId: string;
     
     @Field()
     @Column()
