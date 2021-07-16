@@ -21,7 +21,7 @@ export class User extends BaseEntity {
   password: string;
 
   @Field()
-  @Column("text", { nullable: true })
+  @Column("text", { default: "/images/logo.png "})
   avatar: string;
 
   @Field()
