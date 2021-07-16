@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { animateScroll } from "react-scroll";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import { animateScroll } from "react-scroll";
+import io, { Socket } from "socket.io-client";
 
 import { CREATE_MESSAGE_MUTATION } from "gql/Mutations";
 import { GET_MESSAGES_QUERY, ME_QUERY } from "gql/Queries";
-
+import { sendMessage } from "utils/sendMessage";
+import { formatMessageQueryResponse } from "utils/formatMessageQueryResponse";
 import { UserData } from "types/UserData";
 
 import  { PersonalNav, PersonalNavAvatar, PersonalNavUsername } from "components/Home/PersonalNav";
@@ -24,10 +26,12 @@ const Home: React.FC = () => {
     const [error, setError] = useState<string>();
     const [user, setUser] = useState<UserData>();
 
+    // abusing refs.. i know
     const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
     const inputStateRef = useRef() as React.MutableRefObject<string>;
     const userRef = useRef() as React.MutableRefObject<UserData>;
     const messageWrapperRef = useRef() as React.MutableRefObject<HTMLDivElement>;
+    const socketRef = useRef() as React.MutableRefObject<Socket>;
     
     inputStateRef.current = input;
     userRef.current = user!;
@@ -44,26 +48,28 @@ const Home: React.FC = () => {
 
     const { data: meData } = useQuery(ME_QUERY);
 
-    const [fetchMessages, { data: messageData }] = useLazyQuery(GET_MESSAGES_QUERY);
-
-    // converts graphql response to IMessage array
-    const formatMessageQueryResponse = (): IMessage[] => {
-        let fetchedMessages: IMessage[] = [];
-
-        for(let i = messageData.getMessages.length - 1; i >= 0; i--) {
-            fetchedMessages.push({
-                author: messageData.getMessages[i].author.username,
-                avatar: messageData.getMessages[i].author.avatar,
-                timestamp: messageData.getMessages[i].timestamp,
-                content: messageData.getMessages[i].content
-            });
-        }
-
-        return fetchedMessages;
-    }
+    let [fetchMessages, { data: messageData }] = useLazyQuery(GET_MESSAGES_QUERY);
 
     useEffect(() => {
         window.addEventListener("keydown", handleKeyDown);
+
+        Notification.requestPermission();
+
+        socketRef.current = io("/", {
+            withCredentials: true
+        });
+
+        socketRef.current.on("message", (message) => {
+            setMessageBuffer(s => [
+                ...s,
+                {
+                    author: message.author,
+                    avatar: message.avatar,
+                    timestamp: message.timestamp,
+                    content: message.content
+                }
+            ]);
+        });
 
         // Fetch messages on page load
         fetchMessages({
@@ -78,7 +84,8 @@ const Home: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if(messageWrapperRef.current.scrollTop !== 0 || messageBuffer.length <= 30) {
+        const userScrolledToTop = messageWrapperRef.current.scrollTop === 0;
+        if(!userScrolledToTop || messageBuffer.length <= 30) {
             animateScroll.scrollToBottom({
                 duration: 0,
                 delay: 0,
@@ -91,7 +98,9 @@ const Home: React.FC = () => {
     useEffect(() => (error !== undefined ? console.error(error) : undefined), [error])
 
     useEffect(() => {
-        if(!meData || !meData.me) return;
+        const noUserDataLoaded = (!meData || !meData.me);
+
+        if(noUserDataLoaded) return;
 
         setUser({
             username: meData.me.username,
@@ -100,13 +109,15 @@ const Home: React.FC = () => {
     }, [meData])
 
     useEffect(() => {
-        if(!messageData || !messageData.getMessages) return;
+        const noMessagesLoaded = (!messageData || !messageData.getMessages);
+
+        if(noMessagesLoaded) return;
 
         if(messageBuffer.length > 0) {
-            return setMessageBuffer(s => formatMessageQueryResponse().concat(s));
+            return setMessageBuffer(s => formatMessageQueryResponse(messageData).concat(s));
         }
 
-        setMessageBuffer(formatMessageQueryResponse());
+        setMessageBuffer(formatMessageQueryResponse(messageData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [messageData]);
 
@@ -115,7 +126,9 @@ const Home: React.FC = () => {
     }
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        if(e.currentTarget.scrollTop === 0) {
+        const userScrolledToTop = e.currentTarget.scrollTop === 0;
+
+        if(userScrolledToTop) {
             fetchMessages({
                 variables: {
                     channelId: "32d86642-37f2-4833-b4d3-382caac01a12",
@@ -126,15 +139,20 @@ const Home: React.FC = () => {
     }
 
     const handleSendMessage = () => {
+
+        const message: IMessage = {
+            author: userRef.current.username,
+            avatar: userRef.current.avatar,
+            timestamp: "4:20pm",
+            content: inputStateRef.current
+        };
+
+        sendMessage(socketRef.current, message);
+
         setMessageBuffer(s => [
             ...s,
-            {
-                author: userRef.current.username,
-                avatar: userRef.current.avatar,
-                timestamp: "4:20pm", // will change this static timestamp before release
-                content: inputStateRef.current
-            }
-        ]);
+            message
+       ]);
 
         inputRef.current.focus();
 
@@ -174,7 +192,6 @@ const Home: React.FC = () => {
         </BaseWrapper>
         </>
     )
-
 }
 
 export default Home;
