@@ -35,7 +35,7 @@ export class GetMessagesResolver {
             .leftJoinAndSelect("messages.author", "author")
             .where("messages.timestamp < :beforeDate", { beforeDate })
             .andWhere("messages.isDeleted = false")
-            .orderBy("messages.id", "DESC")
+            .orderBy("messages.timestamp", "DESC")
             .limit(30)
             .getOne();
 
