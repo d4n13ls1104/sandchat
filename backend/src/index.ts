@@ -9,8 +9,11 @@ import * as connectRedis from "connect-redis";
 import * as session from "express-session";
 import * as cors from "cors";
 import * as https from "https";
+import * as http from "http";
 import * as fs from "fs";
 import * as dotenv from "dotenv";
+import { Server } from "socket.io";
+import { parse } from "cookie";
 
 dotenv.config();
 
@@ -20,7 +23,9 @@ const SESSION_SECRET = process.env.SESSION_SECRET || "dev_session_secret";
 
 const boostrap = async () => {
 	await createConnection();
-	
+
+	let server: https.Server | http.Server; 
+
 	const schema = await buildSchema({
 		resolvers: [__dirname + "/modules/resolvers/*/**.ts"]
 	});
@@ -58,19 +63,49 @@ const boostrap = async () => {
 	);
 
 	app.use(session(sessionOptions));
+	app.use(express.static("C:\\Users\\evony\\OneDrive\\Desktop\\sandchat\\backend\\public"));
 
-	app.get("/", (_req, res) => res.send("This is a placeholder route. Ignore this."));
+	app.get("*", (_req, res) => res.sendFile("C:\\Users\\evony\\OneDrive\\Desktop\\sandchat\\backend\\public\\index.html"));
 
 	apolloServer.applyMiddleware({ app });
 
 	if(process.env.ENVIORMENT === "production") {
-		https.createServer({
+		app.listen(80);
+		server = https.createServer({
 			key: fs.readFileSync(__dirname + "/ssl/private.key"),
 			cert: fs.readFileSync(__dirname + "/ssl/certificate.crt")
-		}, app).listen(port, () => console.log(`Server listening in production mode on port ${port}`));
+		}, app).listen(port, () => console.log(`server listening in production mode on port ${port}`));
 	} else {
-		app.listen(port, () => console.log(`Server listening in development mode on port ${port}`));
+		server = http.createServer(app).listen(port, () => console.log(`Server started in development mode on port ${port}`));
 	}
+
+	const io = new Server(server, {
+    	cors: {
+        	origin: "http://localhost:3000",
+        	credentials: true
+    	}
+	});
+
+	io.use(async (socket, next) => {
+	    const sessionKey = parse(socket.request.headers.cookie as any).qid.split(".")[0];
+
+	    const key = "sess:" + sessionKey.substr(2, sessionKey.length);
+
+	    const data = JSON.parse(await redis.get(key) + "");
+
+	    if(!data) return next(new Error("Unauthorized"));
+
+	    console.log("User connected, userId: " + data.userId);
+
+	    next();
+	});
+
+	io.on("connection", (socket) => {
+    	socket.on("message", (message) => {
+        	console.log(`Got message : ${message.content}`);
+        	socket.broadcast.emit("message", message);
+    	});
+	});	
 }
 
 boostrap();
