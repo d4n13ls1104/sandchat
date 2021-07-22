@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-export interface SandContext {
+export interface ApolloContext {
     req: Request,
     res: Response
 }

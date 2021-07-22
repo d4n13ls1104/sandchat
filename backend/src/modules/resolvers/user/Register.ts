@@ -1,12 +1,11 @@
 import "reflect-metadata";
 import { hash } from "bcryptjs";
-import { User } from "../../../entity/User";
+import { User } from "entity/User";
 import { Resolver, Mutation, Arg } from "type-graphql";
-import { RegisterInput } from "./register/RegisterInput";
-import { sendEmail } from "../../utils/sendEmail";
-import { createConfirmationUrl } from "../../utils/createConfirmationUrl";
-import { Channel } from "../../../entity/Channel";
-import { getRepository } from "typeorm";
+import { RegisterInput } from "modules/resolvers/user/register/RegisterInput";
+import { sendEmail } from "modules/utils/sendEmail";
+import { createConfirmationUrl } from "modules/utils/createConfirmationUrl";
+import { Channel } from "entity/Channel";
 
 @Resolver()
 export class RegisterResolver {
@@ -27,12 +26,12 @@ export class RegisterResolver {
 
 			devChannel!.members.push(user);
 
-			await getRepository(Channel).save(devChannel!);
+			Channel.save(devChannel!);
 
 			const confirmationUrl = await createConfirmationUrl(user.id);
 
-			await sendEmail({
-				from: '<noreply@chat.sandtee.tk>',
+			sendEmail({
+				from: '<noreply@chat.sandtee.ml>',
 				to: email,
 				subject: "Please confirm your email",
 				text: "Test",

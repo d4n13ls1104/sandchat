@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import { User } from "../../../entity/User";
+import { User } from "entity/User";
 import { Resolver, Mutation, Arg } from "type-graphql";
-import { createForgotPasswordUrl } from "../../utils/createForgotPasswordUrl";
-import { sendEmail } from "../../utils/sendEmail";
+import { createForgotPasswordUrl } from "modules/utils/createForgotPasswordUrl";
+import { sendEmail } from "modules/utils/sendEmail";
 
 @Resolver()
 export class ForgotPasswordResolver {
@@ -14,7 +14,7 @@ export class ForgotPasswordResolver {
 
         const passwordResetUrl = await createForgotPasswordUrl(user.id);
 
-        await sendEmail({
+        sendEmail({
             from: '<noreply@chat.sandtee.tk>',
             to: email,
             subject: "Password reset",

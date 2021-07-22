@@ -1,9 +1,9 @@
 import { MiddlewareFn } from "type-graphql";
-import { SandContext } from "../../type/SandContext";
-import { SandSession } from "../../type/SandSession";
+import { ApolloContext } from "types/ApolloContext";
+import { ExtendedSession} from "types/ExtendedSession";
 
-export const isAuth: MiddlewareFn<SandContext> = async ({ context }, next) => {
-    if(!(context.req.session as SandSession).userId) throw Error("Not authenticated");
+export const isAuth: MiddlewareFn<ApolloContext> = async ({ context }, next) => {
+    if(!(context.req.session as ExtendedSession).userId) throw Error("Not authenticated");
     
     return next();
 }

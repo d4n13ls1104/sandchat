@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from "type-graphql";
 import { BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Channel } from "../entity/Channel";
-import { Message } from "../entity/Message";
+import { Channel } from "entity/Channel";
+import { Message } from "entity/Message";
 
 @ObjectType()
 @Entity()

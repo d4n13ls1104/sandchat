@@ -1,17 +1,17 @@
 import "reflect-metadata";
 import { compare } from "bcryptjs";
-import { User } from "../../../entity/User";
+import { User } from "entity/User";
 import { Resolver, Mutation, Arg, Ctx } from "type-graphql";
-import { LoginInput } from "./login/LoginInput";
-import { SandContext } from "../../../type/SandContext";
-import { SandSession } from "../../../type/SandSession";
+import { LoginInput } from "modules/resolvers/user/login/LoginInput";
+import { ApolloContext } from "types/ApolloContext";
+import { ExtendedSession } from "types/ExtendedSession";
 
 @Resolver()
 export class LoginResolver {
     @Mutation(() => User, { nullable: true })
     async login(
         @Arg("data") { email, password }: LoginInput,
-        @Ctx() ctx: SandContext
+        @Ctx() ctx: ApolloContext
     ): Promise<User> {
         const user = await User.findOne({ where: { email } });
 
@@ -23,7 +23,7 @@ export class LoginResolver {
 
         if(!passwordIsValid) throw Error("Invalid credentials.");
 
-        (ctx.req.session as SandSession).userId = user.id;
+        (ctx.req.session as ExtendedSession).userId = user.id;
 
         return user;
     }

@@ -1,6 +1,6 @@
 import { InputType, Field } from "type-graphql";
 import { Length } from "class-validator";
-import { IsNotBlank } from "./isNotBlank";
+import { IsNotBlank } from "modules/resolvers/message/createMessage/IsNotBlank";
 
 @InputType()
 export class CreateMessageInput {

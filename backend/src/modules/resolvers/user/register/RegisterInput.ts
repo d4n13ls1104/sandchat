@@ -1,7 +1,7 @@
 import { IsEmail, Matches, Length } from "class-validator";
 import { Field, InputType } from "type-graphql";
-import { IsEmailAlreadyRegistered } from "./isEmailAlreadyRegistered";
-import { IsUsernameAlreadyRegistered } from "./isUsernameAlreadyRegistered";
+import { IsEmailAlreadyRegistered } from "modules/resolvers/user/register/isEmailAlreadyRegistered";
+import { IsUsernameAlreadyRegistered } from "modules/resolvers/user/register/isUsernameAlreadyRegistered";
 
 @InputType()
 export class RegisterInput {

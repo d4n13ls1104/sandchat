@@ -1,12 +1,12 @@
 import "reflect-metadata";
-import { User } from "../../../entity/User";
-import { Channel } from "../../../entity/Channel";
+import { User } from "entity/User";
+import { Channel } from "entity/Channel";
 import { Resolver, Query, Arg, UseMiddleware, Ctx } from "type-graphql";
-import { isAuth } from "../../middlewares/isAuth";
-import { GetMessagesInput } from "./getMessages/GetMessagesInput";
-import { SandContext } from "../../../type/SandContext";
-import { SandSession } from "../../../type/SandSession";
-import { Message } from "../../../entity/Message";
+import { isAuth } from "modules/middlewares/isAuth";
+import { GetMessagesInput } from "modules/resolvers/message/getMessages/GetMessagesInput";
+import { ApolloContext } from "types/ApolloContext";
+import { ExtendedSession } from "types/ExtendedSession";
+import { Message } from "entity/Message";
 
 @Resolver()
 export class GetMessagesResolver {
@@ -14,9 +14,9 @@ export class GetMessagesResolver {
     @Query(() => [Message], { nullable: true })
     async getMessages(
         @Arg("data") { channelId, beforeDate }: GetMessagesInput,
-        @Ctx() ctx: SandContext
+        @Ctx() ctx: ApolloContext
     ): Promise<Message[] | undefined> {
-        const user = await User.findOne((ctx.req.session as SandSession).userId);
+        const user = await User.findOne((ctx.req.session as ExtendedSession).userId);
 
         const channel = await Channel.findOne(channelId); 
 

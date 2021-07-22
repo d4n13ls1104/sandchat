@@ -1,10 +1,10 @@
 import { v4 } from "uuid";
-import { redis } from "../../redis";
-import { forgotPasswordPrefix } from "../constants/redisPrefixes";
+import { redis } from "redis";
+import { forgotPasswordPrefix } from "modules/constants/redisPrefixes";
 
 export const createForgotPasswordUrl = async (userId: string) => {
     const token = v4();
     await redis.set(forgotPasswordPrefix + token, userId, "ex", 60 * 60 * 24);
 
-    return `https://chat.sandtee.tk/user/change-password/${token}`;
+    return `https://chat.sandtee.ml/user/change-password/${token}`;
 }

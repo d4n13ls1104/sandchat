@@ -1,9 +1,9 @@
 import "reflect-metadata";
-import { User } from "../../../entity/User";
+import { User } from "entity/User";
 import { Resolver, Mutation, Arg } from "type-graphql";
-import { ChangePasswordInput } from "./changePassword/ChangePasswordInput";
-import { redis } from "../../../redis";
-import { forgotPasswordPrefix } from "../../constants/redisPrefixes";
+import { ChangePasswordInput } from "modules/resolvers/user/changePassword/ChangePasswordInput";
+import { redis } from "redis";
+import { forgotPasswordPrefix } from "modules/constants/redisPrefixes";
 import { hash } from "bcryptjs";
 
 @Resolver()

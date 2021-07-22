@@ -1,5 +1,5 @@
 import { Session } from "express-session";
 
-export interface SandSession extends Session {
+export interface ExtendedSession extends Session {
     userId: string 
 }
