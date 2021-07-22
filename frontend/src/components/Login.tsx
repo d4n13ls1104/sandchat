@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
+
+import { LOGIN_MUTATION } from "gql/Mutations";
 
 import Error from "components/Common/Error";
 import Link from "components/Common/Link";
@@ -11,78 +13,62 @@ import FormButton from "components/FormComponents/FormButton";
 import FormAlertWrapper from "components/FormComponents/FormAlertWrapper";
 import FormSubText from "components/FormComponents/FormSubText";
 
-interface initialStateInterface {
-    email: string,
-    password: string,
-    success: boolean
-}
-
-const initialState = {
+const initialInput = {
     email: "",
     password: "",
-    success: false
 };
 
-const LOGIN_MUTATION = gql`
-mutation LoginUser($email: String!, $password: String!) {
-    login(data: { email: $email, password: $password }) {
-        id
-    }
-}
-`
-
 const Login: React.FC = () => {
-    const [state, setState] = useState<initialStateInterface>(initialState);
-    const [error, setError] = useState<string | undefined>();
+    const [input, setInput] = useState<typeof initialInput>(initialInput);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState<string>();
 
     const [loginUser, { loading }] = useMutation(LOGIN_MUTATION, {
         onError: ({ graphQLErrors }) => {
-            setState({...state, success: false});
+            setSuccess(false); 
             setError(graphQLErrors[0].message);
         }
     });
 
-    const stateRef = useRef() as React.MutableRefObject<initialStateInterface>;
-    stateRef.current = state;
+    const inputRef = useRef() as React.MutableRefObject<typeof initialInput>;
+    inputRef.current = input;
 
     useEffect(() => {
         window.addEventListener("keydown", handleKeyDown);
 
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        }
+        return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
-        if(state.success) window.location.href = "/home";
-    }, [state.success]);
+        if(success) window.location.href = "/home";
+    }, [success]);
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if(e.key === "Enter") handleSubmit();
     }
 
     const handleSubmit = async () => {
-        await loginUser({
+        const loginResult = await loginUser({
             variables: {
-                email: stateRef.current.email,
-                password: stateRef.current.password
+                email: inputRef.current.email,
+                password: inputRef.current.password
             }
-        }).then((result) => {
-            if(result.data) setState({...state, success: true});
         });
+
+        if(loginResult.data) setSuccess(true); 
     }
 
     return (
         <>
         <FormAlertWrapper>
-            {error !== undefined && !state.success ? <Error message={error}/> : null}
+            {error !== undefined && !success ? <Error message={error}/> : null}
         </FormAlertWrapper>
 
         <FormWrapper>
             <FormHeader>Login</FormHeader>
-            <FormInput onChange={(e) => setState({...state, email: e.target.value})} value={state.email} type="email" placeholder="Email address"/>
-            <FormInput onChange={(e) => setState({...state, password: e.target.value})} value={state.password} type="password" placeholder="Password"/> 
+            <FormInput onChange={(e) => setInput({...input, email: e.target.value})} value={input.email} type="email" placeholder="Email address"/>
+            <FormInput onChange={(e) => setInput({...input, password: e.target.value})} value={input.password} type="password" placeholder="Password"/> 
             <FormButton onClick={handleSubmit} loading={loading}>Login</FormButton>
 
             <FormSubText>
