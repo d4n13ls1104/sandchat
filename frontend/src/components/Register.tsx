@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
+
+import { REGISTER_MUTATION } from "gql/Mutations";
 
 import Error from "components/Common/Error";
 import Link from "components/Common/Link";
@@ -12,36 +14,20 @@ import FormButton from "components/FormComponents/FormButton";
 import FormAlertWrapper from "components/FormComponents/FormAlertWrapper";
 import FormSubText from "components/FormComponents/FormSubText";
 
-interface initialStateInterface {
-    email: string,
-    username: string,
-    password: string,
-    success: boolean,
-}
-
-const initialState = {
+const initialInput = {
     email: "",
     username: "",
     password: "",
-    success: false,
 };
 
-const REGISTER_MUTATION = gql`
-mutation RegisterUser($email: String!, $username: String!, $password: String!) {
-    register(data: {email: $email, username: $username, password: $password }) {
-        id
-    }
-}
-`
-
 const Register: React.FC = () => {
-    const [state, setState] = useState<initialStateInterface>(initialState);
-    const [error, setError] = useState<string | undefined>();
+    const [input, setInput] = useState<typeof initialInput>(initialInput);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState("");
 
     const [registerUser, { data, loading }] = useMutation(REGISTER_MUTATION, {
-        // jesus christ marry mother of satan's left nipple what in the fricking fuck am i looking at
         onError: ({ graphQLErrors }) => {
-            setState({...state, success: false});
+            setSuccess(false);
             if(graphQLErrors) {
                 for(let err of graphQLErrors) {
                     for(let propName in err.extensions!.exception.validationErrors[0].constraints) {
@@ -52,16 +38,13 @@ const Register: React.FC = () => {
         }
     });
 
-    // extremely hacky fix.. im sure there's a better way of doing this but for now idc!
-    const stateRef = useRef() as React.MutableRefObject<initialStateInterface>;
-    stateRef.current = state; 
+    const inputRef = useRef() as React.MutableRefObject<typeof initialInput>;
+    inputRef.current = input; 
  
     useEffect(() => {
         window.addEventListener("keydown", handleKeyDown);
 
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        }
+        return () => window.removeEventListener("keydown", handleKeyDown);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -70,29 +53,29 @@ const Register: React.FC = () => {
     }
 
     const handleSubmit = async () => {
-        await registerUser({
+        const registrationResult = await registerUser({
             variables: {
-                email: stateRef.current.email,
-                username: stateRef.current.username,
-                password: stateRef.current.password
+                email: inputRef.current.email,
+                username: inputRef.current.username,
+                password: inputRef.current.password
             }
-        }).then((result) => {
-            if(result.data) setState({...state, success: true});
         }); 
+
+        if(registrationResult.data) setSuccess(true);
     }
 
     return (
         <>
         <FormAlertWrapper>
-            {error !== undefined && !state.success ? <Error message={error}/> : null}
+            {error !== undefined && !success ? <Error message={error}/> : null}
             {data && data.register ? <Success message="Account created!"/> : null}
         </FormAlertWrapper>
 
         <FormWrapper>
             <FormHeader>Register</FormHeader>
-            <FormInput onChange={(e) => setState({...state, email: e.target.value})} value={state.email} type="email" placeholder="Email address"/>
-            <FormInput onChange={(e) => setState({...state, username: e.target.value})} value={state.username} type="text" placeholder="Username"/>
-            <FormInput onChange={(e) => setState({...state, password: e.target.value})} value={state.password} type="password" placeholder="Password"/>
+            <FormInput onChange={(e) => setInput({...input, email: e.target.value})} value={input.email} type="email" placeholder="Email address"/>
+            <FormInput onChange={(e) => setInput({...input, username: e.target.value})} value={input.username} type="text" placeholder="Username"/>
+            <FormInput onChange={(e) => setInput({...input, password: e.target.value})} value={input.password} type="password" placeholder="Password"/>
             <FormButton onClick={handleSubmit} loading={loading}>Register</FormButton>
 
             <FormSubText>
