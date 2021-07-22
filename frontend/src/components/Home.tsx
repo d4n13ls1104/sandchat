@@ -28,7 +28,7 @@ const Home: React.FC = () => {
 
     // abusing refs.. i know
     const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
-    const inputStateRef = useRef() as React.MutableRefObject<string>;
+    const inputStateRef = useRef("");
     const userRef = useRef() as React.MutableRefObject<UserData>;
     const messageWrapperRef = useRef() as React.MutableRefObject<HTMLDivElement>;
     const socketRef = useRef() as React.MutableRefObject<Socket>;
@@ -85,6 +85,7 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         const userScrolledToTop = messageWrapperRef.current.scrollTop === 0;
+        
         if(!userScrolledToTop || messageBuffer.length <= 30) {
             animateScroll.scrollToBottom({
                 duration: 0,
@@ -95,12 +96,12 @@ const Home: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [messageBuffer]);
 
-    useEffect(() => (error !== undefined ? console.error(error) : undefined), [error])
+    useEffect(() => (error !== undefined ? console.error(error) : undefined), [error]);
 
     useEffect(() => {
-        const noUserDataLoaded = (!meData || !meData.me);
-
-        if(noUserDataLoaded) return;
+        const userDataLoaded = meData.me !== undefined; 
+        
+        if(!userDataLoaded) return;
 
         setUser({
             username: meData.me.username,
@@ -109,9 +110,7 @@ const Home: React.FC = () => {
     }, [meData])
 
     useEffect(() => {
-        const noMessagesLoaded = (!messageData || !messageData.getMessages);
-
-        if(noMessagesLoaded) return;
+        if(!messageData) return;
 
         if(messageBuffer.length > 0) {
             return setMessageBuffer(s => formatMessageQueryResponse(messageData).concat(s));
@@ -139,7 +138,6 @@ const Home: React.FC = () => {
     }
 
     const handleSendMessage = () => {
-
         const message: IMessage = {
             author: userRef.current.username,
             avatar: userRef.current.avatar,
@@ -165,7 +163,6 @@ const Home: React.FC = () => {
 
         setInput("");
     }
-
 
     return (
         <>
