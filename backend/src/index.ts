@@ -3,17 +3,17 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
 import { redis } from "./redis";
-import { SandContext } from "./type/SandContext";
-import * as express from "express";
-import * as connectRedis from "connect-redis";
-import * as session from "express-session";
-import * as cors from "cors";
-import * as https from "https";
-import * as http from "http";
-import * as fs from "fs";
-import * as dotenv from "dotenv";
+import { ApolloContext } from "types/ApolloContext";
 import { Server } from "socket.io";
 import { parse } from "cookie";
+import express from "express";
+import connectRedis from "connect-redis";
+import session from "express-session";
+import cors from "cors";
+import https from "https";
+import http from "http";
+import fs from "fs";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ const boostrap = async () => {
 
 	const apolloServer = new ApolloServer({
 		schema,
-		context: ({ req, res }: SandContext) => ({ req, res })
+		context: ({ req, res }: ApolloContext) => ({ req, res })
 	});
 
 	const app = express();
