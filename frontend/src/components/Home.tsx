@@ -18,6 +18,7 @@ import BaseWrapper from "components/Home/BaseWrapper";
 import NavWrapper from "components/Home/NavWrapper";
 import SettingsButton from "components/Home/SettingsButton";
 import MessageInput from "components/Home/MessageInput";
+import moment from "moment";
 
 const Home: React.FC = () => {
     const [messageBuffer, setMessageBuffer] = useState<IMessage[]>([]);
@@ -28,11 +29,11 @@ const Home: React.FC = () => {
 
     // abusing refs.. i know
     const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
-    const inputStateRef = useRef("");
     const userRef = useRef() as React.MutableRefObject<UserData>;
     const messageWrapperRef = useRef() as React.MutableRefObject<HTMLDivElement>;
     const socketRef = useRef() as React.MutableRefObject<Socket>;
-    
+    const inputStateRef = useRef("");
+     
     inputStateRef.current = input;
     userRef.current = user!;
 
@@ -69,6 +70,10 @@ const Home: React.FC = () => {
                     content: message.content
                 }
             ]);
+
+            if(message.author === userRef.current.username) return;
+
+            new Notification(`New message from ${message.author}`, { body: message.content, icon: "/images/favicon.ico"})
         });
 
         // Fetch messages on page load
@@ -99,9 +104,7 @@ const Home: React.FC = () => {
     useEffect(() => (error !== undefined ? console.error(error) : undefined), [error]);
 
     useEffect(() => {
-        const userDataLoaded = meData.me !== undefined; 
-        
-        if(!userDataLoaded) return;
+        if(!meData || !meData.me) return;
 
         setUser({
             username: meData.me.username,
@@ -141,7 +144,7 @@ const Home: React.FC = () => {
         const message: IMessage = {
             author: userRef.current.username,
             avatar: userRef.current.avatar,
-            timestamp: "4:20pm",
+            timestamp: moment().format(),
             content: inputStateRef.current
         };
 
