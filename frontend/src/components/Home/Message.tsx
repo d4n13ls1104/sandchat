@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { formatMessageTimestamp } from "utils/formatTimestamp";
 
 export type IMessage = {
     author: string,
@@ -14,7 +15,7 @@ const Message: React.FC<{ message: IMessage }> = ({ message }) => {
             <MessageHeader>
                 <MessageUsername>{message.author}</MessageUsername>
                 <MessageBadge src="/images/patch-check-fill.svg" alt=""/>
-                <MessageTimestamp>{message.timestamp}</MessageTimestamp>
+                <MessageTimestamp>{formatMessageTimestamp(message.timestamp)}</MessageTimestamp>
                 <MessageContent>{message.content}</MessageContent>
             </MessageHeader>
         </Wrapper>
