@@ -19,7 +19,7 @@ dotenv.config();
 
 const port = process.env.ENVIORMENT === "production" ? 443 : 4000;
 
-const SESSION_SECRET = process.env.SESSON_SECRETI || "dev_session_secret";
+const SESSION_SECRET = process.env.SESSON_SECRET || "dev_session_secret";
 
 const boostrap = async () => {
 	await createConnection();
